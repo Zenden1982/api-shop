@@ -12,11 +12,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Data;
 
 @Entity
 @Table(name = "payments")
 @Data
+@Builder
 public class Payment {
 
     @Id
@@ -31,5 +33,7 @@ public class Payment {
 
     @CreatedDate
     private LocalDateTime paymentDate;
+
+    private String paymentMethod;
 
 }
