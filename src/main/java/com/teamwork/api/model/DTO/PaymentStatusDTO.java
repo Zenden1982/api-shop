@@ -1,7 +1,5 @@
 package com.teamwork.api.model.DTO;
 
-import java.math.BigDecimal;
-
 import com.teamwork.api.model.Enum.PaymentStatus;
 
 import lombok.AllArgsConstructor;
@@ -11,13 +9,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class PaymentResponseDTO {
+@NoArgsConstructor
+public class PaymentStatusDTO {
 
-    private Long paymentId;
     private Long orderId;
-    private BigDecimal amount;
     private PaymentStatus status;
-    private String confirmationUrl;
+
+    public String transactionId;
+    public String amount;
 }

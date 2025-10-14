@@ -1,7 +1,8 @@
 package com.teamwork.api.model.Enum;
 
 public enum Version {
-    Basic,
-    Pro,
-    Premium
+    BASIC,
+    PRO,
+    PREMIUM,
+    CONTROLLER
 }

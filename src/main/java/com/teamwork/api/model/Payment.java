@@ -5,7 +5,11 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 
+import com.teamwork.api.model.Enum.PaymentStatus;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,6 +38,11 @@ public class Payment {
     @CreatedDate
     private LocalDateTime paymentDate;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
+
     private String paymentMethod;
+
+    private String transactionId;
 
 }

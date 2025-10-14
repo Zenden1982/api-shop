@@ -41,6 +41,8 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    private String shippingAddress;
+    private String phoneNumber;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

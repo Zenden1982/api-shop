@@ -1,5 +1,7 @@
 package com.teamwork.api.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +21,7 @@ public class OrderItem {
     private Long id;
     private String productName;
     private int quantity;
-    private double price;
+    private BigDecimal price;
 
     @ManyToOne
     @JoinColumn(name = "order_id")

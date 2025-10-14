@@ -1,5 +1,6 @@
 package com.teamwork.api.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -30,7 +31,7 @@ public class Product {
     private String name;
 
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     private Version version;
@@ -38,7 +39,7 @@ public class Product {
     @Column
     private String description;
 
-    private String stockQuantity;
+    private Integer stockQuantity;
 
     private Boolean isAvailable;
 

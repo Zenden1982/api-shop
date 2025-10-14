@@ -18,17 +18,17 @@ public class PaymentServiceTest {
     private final ApiClient apiClient;
     private final PaymentRepository paymentRepository;
 
-    public Payment createPayment(Double value, String currency, Long orderId) throws Exception {
+    public Payment createPayment() {
         PaymentProcessor paymentProcessor = new PaymentProcessor(apiClient);
-        String valueStr = String.valueOf(value);
-        return paymentProcessor.create(Payment.builder()
-                .amount(Amount.builder().value(valueStr).currency(Currency.RUB).build())
-                .description("Оплата заказа")
+        Payment payment = paymentProcessor.create(Payment.builder()
+                .amount(Amount.builder().value("100.00").currency(Currency.RUB).build())
+                .description("New payment")
                 .confirmation(Confirmation.builder()
                         .type(Confirmation.Type.REDIRECT)
-                        .returnUrl("http://localhost:8080/")
+                        .returnUrl("https://www.example.com/return_url")
                         .build())
                 .build(), null);
+        return payment;
     }
 
 }
