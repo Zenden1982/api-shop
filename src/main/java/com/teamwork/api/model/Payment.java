@@ -35,13 +35,13 @@ public class Payment {
 
     private BigDecimal amount;
 
+    private String currency;
+
     @CreatedDate
     private LocalDateTime paymentDate;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
-
-    private String paymentMethod;
 
     private String transactionId;
 
