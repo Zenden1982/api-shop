@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 
 import com.teamwork.api.config.Security.JwtTokenUtils;
 import com.teamwork.api.model.AuthRequest;
-import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
-import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.model.Role;
 import com.teamwork.api.model.User;
+import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
+import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.repository.RoleRepository;
 import com.teamwork.api.repository.UserRepository;
 
@@ -81,8 +81,7 @@ public class UserService implements UserDetailsService {
         user.setEmail(userDTO.getEmail());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            // В реальном приложении здесь должно быть хеширование пароля
-            user.setPasswordHash(userDTO.getPassword());
+            user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
         }
         userRepository.save(user);
 

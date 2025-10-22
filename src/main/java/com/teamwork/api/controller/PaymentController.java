@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.teamwork.api.service.PaymentService;
 import com.teamwork.api.service.PaymentServiceTest;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.Data;
 import ru.loolzaaa.youkassa.client.ApiClient;
 import ru.loolzaaa.youkassa.client.ApiClientBuilder;
@@ -18,6 +19,7 @@ import ru.loolzaaa.youkassa.processors.MeProcessor;
 @RestController
 @Data
 @RequestMapping("/api/v1/payments")
+@SecurityRequirement(name = "Bearer")
 public class PaymentController {
 
     private final PaymentService paymentService;
