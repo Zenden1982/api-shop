@@ -44,7 +44,7 @@ public class UserService implements UserDetailsService {
 
         // Установка роли по умолчанию
         Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> roleRepository.save(new Role(0, "ROLE_USER")));
+                .orElseGet(() -> roleRepository.save(new Role(0, "USER")));
         user.setRoles(List.of(userRole));
 
         userRepository.save(user);

@@ -35,8 +35,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .headers(headers -> headers.frameOptions(frameOptionsCustomizer -> frameOptionsCustomizer.disable()))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/users/info").authenticated()
-                        .requestMatchers("/api/v1/payments/**").authenticated()
+                        //.requestMatchers("/api/users/info").authenticated()
+                        //.requestMatchers("/api/v1/payments/**").authenticated()
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(
