@@ -19,7 +19,8 @@ public class OrderItemDTO {
      * Преобразует OrderItem в OrderItemDTO.
      */
     public static OrderItemDTO fromOrderItem(OrderItem orderItem) {
-        if (orderItem == null) return null;
+        if (orderItem == null)
+            return null;
         return OrderItemDTO.builder()
                 .productId(orderItem.getProduct().getId())
                 .quantity(orderItem.getQuantity())
@@ -30,7 +31,8 @@ public class OrderItemDTO {
      * Преобразует OrderItemDTO в OrderItem.
      */
     public static OrderItem toOrderItem(OrderItemDTO dto) {
-        if (dto == null) return null;
+        if (dto == null)
+            return null;
         OrderItem orderItem = new OrderItem();
         orderItem.setQuantity(dto.getQuantity());
         // Связь с продуктом должна быть установлена отдельно

@@ -26,45 +26,29 @@ public class ProductController {
 
     private final ProductService productService;
 
-    /**
-     * Получить все продукты с пагинацией.
-     */
     @GetMapping
     public ResponseEntity<Page<ProductReadDTO>> getAllProducts(Pageable pageable) {
         return ResponseEntity.ok(productService.findAll(pageable));
     }
 
-    /**
-     * Получить продукт по ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<ProductReadDTO> getProductById(@PathVariable Long id) {
-        return productService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(productService.findById(id));
     }
 
-    /**
-     * Создать новый продукт.
-     */
     @PostMapping
     public ResponseEntity<ProductReadDTO> createProduct(@RequestBody ProductCreateUpdateDTO dto) {
         ProductReadDTO createdProduct = productService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
-    /**
-     * Обновить существующий продукт.
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<ProductReadDTO> updateProduct(@PathVariable Long id, @RequestBody ProductCreateUpdateDTO dto) {
+    public ResponseEntity<ProductReadDTO> updateProduct(@PathVariable Long id,
+            @RequestBody ProductCreateUpdateDTO dto) {
         ProductReadDTO updatedProduct = productService.update(id, dto);
         return ResponseEntity.ok(updatedProduct);
     }
 
-    /**
-     * Удалить продукт по ID.
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.delete(id);

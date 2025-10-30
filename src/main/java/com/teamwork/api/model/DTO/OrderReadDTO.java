@@ -10,7 +10,6 @@ import com.teamwork.api.model.Enum.OrderStatus;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Builder
 @Data
 public class OrderReadDTO {
@@ -23,6 +22,7 @@ public class OrderReadDTO {
     private String shippingAddress;
     private String phoneNumber;
 
+    private PaymentResponseDTO payment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,7 +30,8 @@ public class OrderReadDTO {
      * Преобразует сущность Order в DTO для чтения.
      */
     public static OrderReadDTO fromOrder(Order order) {
-        if (order == null) return null;
+        if (order == null)
+            return null;
         return OrderReadDTO.builder()
                 .id(order.getId())
                 .user(UserReadDTO.toUserReadDTO(order.getUser()))
@@ -41,6 +42,7 @@ public class OrderReadDTO {
                 .status(order.getStatus())
                 .shippingAddress(order.getShippingAddress())
                 .phoneNumber(order.getPhoneNumber())
+                .payment(PaymentResponseDTO.fromPayment(order.getPayment()))
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();

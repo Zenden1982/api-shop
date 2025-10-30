@@ -15,7 +15,7 @@ services:
 
   # Сервис для вашего Spring Boot приложения
   spring-app:
-    build: .
+    image: myusername/smart-curtain-api:latest
     container_name: smart-curtain-api
     ports:
       - "8080:8080"

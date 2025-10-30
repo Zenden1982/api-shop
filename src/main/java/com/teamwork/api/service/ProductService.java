@@ -1,7 +1,5 @@
 package com.teamwork.api.service;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,11 +23,10 @@ public class ProductService {
                 .map(ProductReadDTO::fromProduct);
     }
 
-    public Optional<ProductReadDTO> findById(Long id) {
+    public ProductReadDTO findById(Long id) {
         return productRepository.findById(id)
-                .map(ProductReadDTO::fromProduct);
+                .map(ProductReadDTO::fromProduct).orElseThrow(() -> new RuntimeException("Product not found: " + id));
     }
-
 
     public ProductReadDTO create(ProductCreateUpdateDTO dto) {
         Product product = ProductCreateUpdateDTO.toProduct(dto);

@@ -11,6 +11,8 @@ import lombok.Data;
 @Data
 @Builder
 public class UserReadDTO {
+
+    private String id;
     private String username;
     private String firstName;
     private String lastName;
@@ -22,6 +24,7 @@ public class UserReadDTO {
 
     public static UserReadDTO toUserReadDTO(User user) {
         return UserReadDTO.builder()
+                .id(user.getId().toString())
                 .username(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())

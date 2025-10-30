@@ -2,8 +2,8 @@ package com.teamwork.api.model.DTO;
 
 import java.math.BigDecimal;
 
-import com.teamwork.api.model.Product;
 import com.teamwork.api.model.Enum.Version;
+import com.teamwork.api.model.Product;
 
 import lombok.Builder;
 import lombok.Data;
@@ -20,11 +20,9 @@ public class ProductCreateUpdateDTO {
 	private Boolean isAvailable;
 	private String imageUrl;
 
-	/**
-	 * Преобразует DTO в сущность Product. Поле id и временные метки не устанавливаются.
-	 */
 	public static Product toProduct(ProductCreateUpdateDTO dto) {
-		if (dto == null) return null;
+		if (dto == null)
+			return null;
 		Product p = new Product();
 		p.setName(dto.getName());
 		p.setPrice(dto.getPrice());
