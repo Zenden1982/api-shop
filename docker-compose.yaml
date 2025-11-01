@@ -1,32 +1,41 @@
+version: "3.8"
+
 services:
   # Сервис для базы данных PostgreSQL
   postgres-db:
     image: postgres:15-alpine
     container_name: smart-curtain-postgres
     environment:
-      POSTGRES_USER: postgres # <--- Имя пользователя из вашего application-postgres.properties
-      POSTGRES_PASSWORD: zxc993 # <--- Пароль из вашего application-postgres.properties
-      POSTGRES_DB: smart_curtain_db # <--- Имя БД из вашего application-postgres.properties
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: zxc993 # ← Используем переменные окружения
+      POSTGRES_DB: smart_curtain_db
     ports:
-      - "5432:5432"
+      - "5432:5432" # ← Не доступен из интернета
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - app-network
 
   # Сервис для вашего Spring Boot приложения
   spring-app:
-    image: myusername/smart-curtain-api:latest
+    image: zenden1703/smart-curtain-api:latest
     container_name: smart-curtain-api
     ports:
-      - "8080:8080"
+      - "8080:8080" # ← Не доступен из интернета
     environment:
-      # --- Активируем профиль postgres ---
       SPRING_PROFILES_ACTIVE: postgres
-
+      SPRING_DATASOURCE_PASSWORD: zxc993 # ← Передаем пароль в Spring
     depends_on:
       - postgres-db
-    restart: on-failure
+    restart: unless-stopped # ← Стабильнее
+    networks:
+      - app-network
 
 volumes:
   postgres-data:
     driver: local
+
+networks:
+  app-network:
+    driver: bridge

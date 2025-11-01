@@ -18,7 +18,6 @@ public class ProductCreateUpdateDTO {
 	private String description;
 	private Integer stockQuantity;
 	private Boolean isAvailable;
-	private String imageUrl;
 
 	public static Product toProduct(ProductCreateUpdateDTO dto) {
 		if (dto == null)
@@ -30,7 +29,6 @@ public class ProductCreateUpdateDTO {
 		p.setDescription(dto.getDescription());
 		p.setStockQuantity(dto.getStockQuantity());
 		p.setIsAvailable(dto.getIsAvailable());
-		p.setImageUrl(dto.getImageUrl());
 		return p;
 	}
 

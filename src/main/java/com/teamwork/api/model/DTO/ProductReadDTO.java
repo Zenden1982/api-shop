@@ -2,7 +2,9 @@ package com.teamwork.api.model.DTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.teamwork.api.model.Image;
 import com.teamwork.api.model.Product;
 import com.teamwork.api.model.Enum.Version;
 
@@ -20,7 +22,7 @@ public class ProductReadDTO {
     private String description;
     private Integer stockQuantity;
     private Boolean isAvailable;
-    private String imageUrl;
+    private List<Image> images;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -28,7 +30,8 @@ public class ProductReadDTO {
      * Преобразует сущность Product в DTO для чтения.
      */
     public static ProductReadDTO fromProduct(Product product) {
-        if (product == null) return null;
+        if (product == null)
+            return null;
         return ProductReadDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -37,7 +40,7 @@ public class ProductReadDTO {
                 .description(product.getDescription())
                 .stockQuantity(product.getStockQuantity())
                 .isAvailable(product.getIsAvailable())
-                .imageUrl(product.getImageUrl())
+                .images(product.getImages())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();

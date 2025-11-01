@@ -16,10 +16,12 @@ import com.teamwork.api.model.DTO.OrderCreateUpdateDTO;
 import com.teamwork.api.model.DTO.OrderReadDTO;
 import com.teamwork.api.service.OrderService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
+@SecurityRequirement(name = "BearerAuth")
 @RequiredArgsConstructor
 public class OrderController {
 

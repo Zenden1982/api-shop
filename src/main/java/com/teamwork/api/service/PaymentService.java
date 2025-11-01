@@ -141,7 +141,7 @@ public class PaymentService {
                 PaymentProcessor paymentProcessor = new PaymentProcessor(client);
                 ru.loolzaaa.youkassa.model.Payment yooPayment = paymentProcessor.cancel(
                                 transactionId,
-                                UUID.randomUUID().toString());
+                                null);
 
                 Payment payment = paymentRepository.findByTransactionId(transactionId)
                                 .orElseThrow(() -> new RuntimeException("Payment not found"));

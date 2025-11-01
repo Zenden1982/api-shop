@@ -45,10 +45,10 @@ public class PaymentController {
         return ResponseEntity.ok(payment);
     }
 
-    @PostMapping("/cancel/{transactionId}")
-    public ResponseEntity<Payment> cancel(@PathVariable String transactionId) {
-        Payment payment = paymentService.cancelPayment(transactionId);
-        return ResponseEntity.ok(payment);
-    }
+    // @PostMapping("/cancel/{transactionId}")
+    // public ResponseEntity<Payment> cancel(@PathVariable String transactionId) {
+    // Payment payment = paymentService.cancelPayment(transactionId);
+    // return ResponseEntity.ok(payment);
+    // }
 
 }

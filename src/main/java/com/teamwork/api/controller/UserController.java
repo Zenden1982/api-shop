@@ -20,10 +20,12 @@ import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
 import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.service.UserService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
+@SecurityRequirement(name = "BearerAuth")
 @RequiredArgsConstructor
 public class UserController {
 

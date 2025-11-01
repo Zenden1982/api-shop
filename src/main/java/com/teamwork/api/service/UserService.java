@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 
 import com.teamwork.api.config.Security.JwtTokenUtils;
 import com.teamwork.api.model.AuthRequest;
-import com.teamwork.api.model.Role;
-import com.teamwork.api.model.User;
 import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
 import com.teamwork.api.model.DTO.UserReadDTO;
+import com.teamwork.api.model.Role;
+import com.teamwork.api.model.User;
 import com.teamwork.api.repository.RoleRepository;
 import com.teamwork.api.repository.UserRepository;
 
@@ -44,7 +44,7 @@ public class UserService implements UserDetailsService {
 
         // Установка роли по умолчанию
         Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> roleRepository.save(new Role(0, "USER")));
+                .orElseGet(() -> roleRepository.save(new Role(0, "ROLE_USER")));
         user.setRoles(List.of(userRole));
 
         userRepository.save(user);
