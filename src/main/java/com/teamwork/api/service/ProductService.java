@@ -38,13 +38,29 @@ public class ProductService {
     public ProductReadDTO update(Long id, ProductCreateUpdateDTO dto) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            existingProduct.setName(dto.getName());
+        }
 
-        existingProduct.setName(dto.getName());
-        existingProduct.setPrice(dto.getPrice());
-        existingProduct.setVersion(dto.getVersion());
-        existingProduct.setDescription(dto.getDescription());
-        existingProduct.setStockQuantity(dto.getStockQuantity());
-        existingProduct.setIsAvailable(dto.getIsAvailable());
+        if (dto.getPrice() != null) {
+            existingProduct.setPrice(dto.getPrice());
+        }
+
+        if (dto.getVersion() != null) {
+            existingProduct.setVersion(dto.getVersion());
+        }
+
+        if (dto.getDescription() != null && !dto.getDescription().isBlank()) {
+            existingProduct.setDescription(dto.getDescription());
+        }
+
+        if (dto.getStockQuantity() != null) {
+            existingProduct.setStockQuantity(dto.getStockQuantity());
+        }
+
+        if (dto.getIsAvailable() != null) {
+            existingProduct.setIsAvailable(dto.getIsAvailable());
+        }
 
         Product updatedProduct = productRepository.save(existingProduct);
         return ProductReadDTO.fromProduct(updatedProduct);

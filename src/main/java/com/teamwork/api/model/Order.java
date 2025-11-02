@@ -4,9 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.teamwork.api.model.Enum.OrderStatus;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +24,7 @@ import lombok.Data;
 @Entity
 @Table(name = "orders")
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class Order {
 
     @Id

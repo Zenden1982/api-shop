@@ -20,12 +20,15 @@ import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
 import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @SecurityRequirement(name = "BearerAuth")
+@Tag(name = "Users", description = "Регистрация, аутентификация и управление пользователями")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -33,6 +36,7 @@ public class UserController {
 
     private final AuthenticationManager authenticationManager;
 
+    @Operation(summary = "Регистрация пользователя", description = "Создаёт нового пользователя. Пример тела запроса: {username, firstName, lastName, email, phoneNumber, password}.")
     @PostMapping
     public ResponseEntity<UserReadDTO> createUser(@RequestBody UserCreateUpdateDTO userDTO) {
         UserReadDTO createdUser = userService.createUser(userDTO);
@@ -66,8 +70,9 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Аутентификация (получение JWT)", description = "Логин пользователя. Пример тела запроса: {username, password}. Возвращает JWT строку.")
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody AuthRequest user) {
-        return ResponseEntity.status(200).body(userService.generateToken(user, authenticationManager));
+        return ResponseEntity.ok(userService.generateToken(user, authenticationManager));
     }
 }

@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "BearerAuth")
 @Slf4j
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhooks", description = "Получение вебхуков")
 public class WebhookController {
 
     private final WebhookService webhookService;

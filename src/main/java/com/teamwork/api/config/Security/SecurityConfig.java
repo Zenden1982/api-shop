@@ -2,6 +2,7 @@ package com.teamwork.api.config.Security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -36,12 +37,26 @@ public class SecurityConfig {
                                 .cors(withDefaults())
                                 .headers(headers -> headers.frameOptions(
                                                 frameOptionsCustomizer -> frameOptionsCustomizer.disable()))
-                                .authorizeHttpRequests(requests -> requests
-                                                .requestMatchers("/api/v1/users/**").permitAll()
-                                                .requestMatchers("/api/v1/**").hasRole("ADMIN")
+                                .authorizeHttpRequests(requests -> requests.requestMatchers(
+                                                "/", "/static/assets/**", "/assets/**", "/test", "/index.html",
+                                                "/favicon.ico",
+                                                "/css/**", "/js/**", "/images/**", "/static/**",
+                                                "/webjars/**", "/swagger-ui/**", "/v3/api-docs/**",
+                                                "/swagger-ui.html", "/h2-console/**").permitAll()
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/v1/users", // Регистрация
+                                                                "/api/v1/users/login", // Вход
+                                                                "/api/v1/auth/refresh",
+                                                                "/api/v1/webhooks/**")
+                                                .permitAll()
 
-                                                .requestMatchers("/api/v1/payments/**").authenticated()
-                                                .anyRequest().permitAll())
+                                                // Разрешаем все GET-запросы к API
+                                                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+
+                                                // Все остальные запросы (например, POST, PUT, DELETE к защищенным
+                                                // ресурсам)
+                                                // требуют роли ADMIN
+                                                .anyRequest().hasRole("ADMIN"))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(
                                                                 org.springframework.security.config.http.SessionCreationPolicy.STATELESS))

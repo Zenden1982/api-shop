@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,12 +17,15 @@ import com.teamwork.api.model.DTO.OrderCreateUpdateDTO;
 import com.teamwork.api.model.DTO.OrderReadDTO;
 import com.teamwork.api.service.OrderService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/orders")
 @SecurityRequirement(name = "BearerAuth")
+@Tag(name = "Orders", description = "Создание и управление заказами")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -47,6 +51,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findByUserId(userId));
     }
 
+    @Operation(summary = "Создать заказ", description = "Создаёт заказ. Пример тела запроса:\n{\n  \"userId\": 1,\n  \"items\": [{ \"productId\": 10, \"quantity\": 2 }],\n  \"shippingAddress\": \"ул. Ленина, 1\",\n  \"phoneNumber\": \"+79991234567\"\n}")
     @PostMapping
     public ResponseEntity<OrderReadDTO> create(@RequestBody OrderCreateUpdateDTO dto) {
         OrderReadDTO created = orderService.create(dto);
@@ -57,6 +62,12 @@ public class OrderController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         orderService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderReadDTO> update(@PathVariable Long id, @RequestBody OrderCreateUpdateDTO dto) {
+        OrderReadDTO updated = orderService.update(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
 }

@@ -17,13 +17,16 @@ import com.teamwork.api.model.DTO.ProductCreateUpdateDTO;
 import com.teamwork.api.model.DTO.ProductReadDTO;
 import com.teamwork.api.service.ProductService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "BearerAuth")
+@Tag(name = "Products", description = "Управление товарами: просмотр, создание, обновление, удаление")
 public class ProductController {
 
     private final ProductService productService;
@@ -39,6 +42,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.findById(id));
     }
 
+    @Operation(summary = "Создать продукт", description = "Создаёт новый продукт. Передайте name, price, version, description, stockQuantity, isAvailable.")
     @PostMapping
     public ResponseEntity<ProductReadDTO> createProduct(@RequestBody ProductCreateUpdateDTO dto) {
         ProductReadDTO createdProduct = productService.create(dto);

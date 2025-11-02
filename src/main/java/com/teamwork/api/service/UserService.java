@@ -74,15 +74,31 @@ public class UserService implements UserDetailsService {
     public UserReadDTO updateUser(Long id, UserCreateUpdateDTO userDTO) {
 
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        // Обновляем только переданные поля (partial update)
+        if (userDTO.getUsername() != null && !userDTO.getUsername().isBlank()) {
+            user.setUsername(userDTO.getUsername());
+        }
 
-        user.setUsername(userDTO.getUsername());
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setEmail(userDTO.getEmail());
-        user.setPhoneNumber(userDTO.getPhoneNumber());
+        if (userDTO.getFirstName() != null && !userDTO.getFirstName().isBlank()) {
+            user.setFirstName(userDTO.getFirstName());
+        }
+
+        if (userDTO.getLastName() != null && !userDTO.getLastName().isBlank()) {
+            user.setLastName(userDTO.getLastName());
+        }
+
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+            user.setEmail(userDTO.getEmail());
+        }
+
+        if (userDTO.getPhoneNumber() != null && !userDTO.getPhoneNumber().isBlank()) {
+            user.setPhoneNumber(userDTO.getPhoneNumber());
+        }
+
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
         }
+
         userRepository.save(user);
 
         return UserReadDTO.toUserReadDTO(user);
