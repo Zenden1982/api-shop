@@ -20,7 +20,7 @@ public class OptionChoiceDTO {
             return null;
         return OptionChoiceDTO.builder()
                 .id(c.getId())
-                .value(c.getValue())
+                .value(c.getChoiceValue())
                 .price(c.getPrice())
                 .optionId(c.getOption() != null ? c.getOption().getId() : null)
                 .build();

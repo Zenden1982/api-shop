@@ -59,6 +59,12 @@ public class SecurityConfig {
                                                                 "/api/v1/webhooks/**")
                                                 .permitAll()
 
+                                                // Allow authenticated users to manage their orders
+                                                .requestMatchers(HttpMethod.POST, "/api/v1/orders/**").authenticated()
+                                                .requestMatchers(HttpMethod.PUT, "/api/v1/orders/**").authenticated()
+                                                .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/**").authenticated()
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").authenticated()
+
                                                 // Разрешаем все GET-запросы к API
                                                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
 

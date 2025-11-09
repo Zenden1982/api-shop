@@ -19,7 +19,11 @@ import com.teamwork.api.model.OptionChoice;
 import com.teamwork.api.model.DTO.ConfigOptionDTO;
 import com.teamwork.api.repository.ConfigOptionRepository;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
+@SecurityRequirement(name = "BearerAuth")
+
 @RequestMapping("/api/v1/config-options")
 public class ConfigOptionController {
 
@@ -51,7 +55,7 @@ public class ConfigOptionController {
             List<OptionChoice> choices = dto.getChoices().stream().map(c -> {
                 OptionChoice oc = new OptionChoice();
                 oc.setId(c.getId());
-                oc.setValue(c.getValue());
+                oc.setChoiceValue(c.getValue());
                 oc.setPrice(c.getPrice());
                 oc.setOption(entity);
                 return oc;
@@ -73,7 +77,7 @@ public class ConfigOptionController {
                 List<OptionChoice> choices = dto.getChoices().stream().map(c -> {
                     OptionChoice oc = new OptionChoice();
                     oc.setId(c.getId());
-                    oc.setValue(c.getValue());
+                    oc.setChoiceValue(c.getValue());
                     oc.setPrice(c.getPrice());
                     oc.setOption(existing);
                     return oc;

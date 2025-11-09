@@ -10,5 +10,5 @@ import com.teamwork.api.model.Order;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    Optional<Order> findByUserId(Long orderNumber);
+    Optional<Order> findByUserId(Long userId);
 }

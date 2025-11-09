@@ -20,8 +20,12 @@ import com.teamwork.api.model.DTO.OptionChoiceDTO;
 import com.teamwork.api.repository.ConfigOptionRepository;
 import com.teamwork.api.repository.OptionChoiceRepository;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
 @RequestMapping("/api/v1/option-choices")
+@SecurityRequirement(name = "BearerAuth")
+
 public class OptionChoiceController {
 
     private final OptionChoiceRepository optionChoiceRepository;
@@ -56,7 +60,7 @@ public class OptionChoiceController {
             return ResponseEntity.badRequest().build();
         }
         OptionChoice entity = new OptionChoice();
-        entity.setValue(dto.getValue());
+        entity.setChoiceValue(dto.getValue());
         entity.setPrice(dto.getPrice());
         entity.setOption(option);
 
@@ -69,7 +73,7 @@ public class OptionChoiceController {
     public ResponseEntity<OptionChoiceDTO> update(@PathVariable Long id, @RequestBody OptionChoiceDTO dto) {
         return optionChoiceRepository.findById(id).map(existing -> {
             if (dto.getValue() != null)
-                existing.setValue(dto.getValue());
+                existing.setChoiceValue(dto.getValue());
             if (dto.getPrice() != null)
                 existing.setPrice(dto.getPrice());
             if (dto.getOptionId() != null) {
