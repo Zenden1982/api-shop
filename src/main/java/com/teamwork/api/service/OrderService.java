@@ -4,24 +4,25 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.teamwork.api.model.OptionChoice;
 import com.teamwork.api.model.Order;
 import com.teamwork.api.model.OrderItem;
 import com.teamwork.api.model.Payment;
-import com.teamwork.api.model.Product;
 import com.teamwork.api.model.User;
 import com.teamwork.api.model.DTO.OrderCreateUpdateDTO;
 import com.teamwork.api.model.DTO.OrderItemDTO;
 import com.teamwork.api.model.DTO.OrderReadDTO;
 import com.teamwork.api.model.Enum.OrderStatus;
+import com.teamwork.api.repository.OptionChoiceRepository;
 import com.teamwork.api.repository.OrderItemRepository;
 import com.teamwork.api.repository.OrderRepository;
-import com.teamwork.api.repository.ProductRepository;
 import com.teamwork.api.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class OrderService {
     private final PaymentService paymentService;
     private final OrderItemRepository orderItemService;
 
-    private final ProductRepository productRepository;
+    private final OptionChoiceRepository optionChoiceRepository;
 
     @Transactional
     public Page<OrderReadDTO> findAll(int page, int size) {
@@ -70,20 +71,23 @@ public class OrderService {
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         for (OrderItemDTO itemDTO : dto.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + itemDTO.getProductId()));
-
             OrderItem orderItem = new OrderItem();
-            orderItem.setProduct(product);
-            orderItem.setQuantity(itemDTO.getQuantity());
             orderItem.setOrder(order);
-            orderItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
 
+            // Найдём выбранные опции и посчитаем цену позиции
+            BigDecimal itemPrice = BigDecimal.ZERO;
+            if (itemDTO.getSelectedOptionIds() != null) {
+                var choices = optionChoiceRepository.findAllById(itemDTO.getSelectedOptionIds());
+                // set selected options
+                orderItem.setSelectedOptions(Set.copyOf(choices));
+                for (OptionChoice c : choices) {
+                    if (c.getPrice() != null)
+                        itemPrice = itemPrice.add(c.getPrice());
+                }
+            }
+            orderItem.setPrice(itemPrice);
             order.getItems().add(orderItem);
-            totalPrice = totalPrice.add(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
-
-            product.setStockQuantity(product.getStockQuantity() - itemDTO.getQuantity());
-            productRepository.save(product);
+            totalPrice = totalPrice.add(itemPrice);
         }
 
         order.setTotalPrice(totalPrice);
@@ -129,51 +133,32 @@ public class OrderService {
                     OrderItem orderItem = orderItemService.findById(itemDTO.getId())
                             .orElseThrow(() -> new RuntimeException("OrderItem not found: " + itemDTO.getId()));
 
-                    Product product = productRepository.findById(itemDTO.getProductId())
-                            .orElseThrow(() -> new RuntimeException("Product not found: " + itemDTO.getProductId()));
-
-                    // Управление остатками: учтём разницу в количестве или смену продукта
-                    int oldQty = orderItem.getQuantity();
-                    Long oldProductId = orderItem.getProduct() != null ? orderItem.getProduct().getId() : null;
-                    int newQty = itemDTO.getQuantity() != null ? itemDTO.getQuantity() : 0;
-
-                    if (oldProductId != null && oldProductId.equals(product.getId())) {
-                        int delta = newQty - oldQty;
-                        product.setStockQuantity(product.getStockQuantity() - delta);
-                        productRepository.save(product);
-                    } else {
-                        // Вернём старые остатки для предыдущего продукта
-                        if (oldProductId != null) {
-                            Product oldProduct = productRepository.findById(oldProductId)
-                                    .orElse(null);
-                            if (oldProduct != null) {
-                                oldProduct.setStockQuantity(oldProduct.getStockQuantity() + oldQty);
-                                productRepository.save(oldProduct);
-                            }
+                    // Если переданы выбранные опции — заменим их и пересчитаем цену
+                    BigDecimal itemPrice = BigDecimal.ZERO;
+                    if (itemDTO.getSelectedOptionIds() != null) {
+                        var choices = optionChoiceRepository.findAllById(itemDTO.getSelectedOptionIds());
+                        orderItem.setSelectedOptions(Set.copyOf(choices));
+                        for (OptionChoice c : choices) {
+                            if (c.getPrice() != null)
+                                itemPrice = itemPrice.add(c.getPrice());
                         }
-                        // Уменьшим склад для нового продукта
-                        product.setStockQuantity(product.getStockQuantity() - newQty);
-                        productRepository.save(product);
+                        orderItem.setPrice(itemPrice);
                     }
-
-                    orderItem.setProduct(product);
-                    orderItem.setQuantity(newQty);
-                    orderItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(newQty)));
                 } else {
                     // Создаём новую позицию и добавляем в заказ
-                    Product product = productRepository.findById(itemDTO.getProductId())
-                            .orElseThrow(() -> new RuntimeException("Product not found: " + itemDTO.getProductId()));
-
                     OrderItem orderItem = new OrderItem();
-                    orderItem.setProduct(product);
-                    orderItem.setQuantity(itemDTO.getQuantity());
                     orderItem.setOrder(order);
-                    orderItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
-
+                    BigDecimal itemPrice = BigDecimal.ZERO;
+                    if (itemDTO.getSelectedOptionIds() != null) {
+                        var choices = optionChoiceRepository.findAllById(itemDTO.getSelectedOptionIds());
+                        orderItem.setSelectedOptions(Set.copyOf(choices));
+                        for (OptionChoice c : choices) {
+                            if (c.getPrice() != null)
+                                itemPrice = itemPrice.add(c.getPrice());
+                        }
+                    }
+                    orderItem.setPrice(itemPrice);
                     order.getItems().add(orderItem);
-
-                    product.setStockQuantity(product.getStockQuantity() - itemDTO.getQuantity());
-                    productRepository.save(product);
                 }
             }
 

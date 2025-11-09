@@ -1,5 +1,7 @@
 package com.teamwork.api.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,5 +78,11 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody AuthRequest user) {
         return ResponseEntity.ok(userService.generateToken(user, authenticationManager));
+    }
+
+    @PostMapping("/{id}/roles")
+    public ResponseEntity<Void> assignRolesToUser(@PathVariable Long id, @RequestBody List<String> roleNames) {
+        userService.assignRolesToUser(id, roleNames);
+        return ResponseEntity.ok().build();
     }
 }

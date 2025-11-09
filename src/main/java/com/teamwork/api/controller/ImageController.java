@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.teamwork.api.model.DTO.ImageReadDTO;
 import com.teamwork.api.model.Image;
-import com.teamwork.api.repository.ProductRepository;
+import com.teamwork.api.repository.ConfigOptionRepository;
 import com.teamwork.api.service.ImageService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,16 +34,16 @@ public class ImageController {
     private ImageService imageService;
 
     @Autowired
-    private ProductRepository productRepository;
+    private ConfigOptionRepository configOptionRepository;
 
-    @Operation(summary = "Загрузить изображение", description = "Загружает файл изображения и создаёт запись для продукта")
-    @PostMapping("/{productId}")
-    public ResponseEntity<Image> create(@PathVariable Long productId, @RequestPart("image") MultipartFile image) {
+    @Operation(summary = "Загрузить изображение", description = "Загружает файл изображения и создаёт запись для конфигурации")
+    @PostMapping("/{configId}")
+    public ResponseEntity<Image> create(@PathVariable Long configId, @RequestPart("image") MultipartFile image) {
         Image image2 = new Image();
         imageService.uploadImage(image);
         image2.setImage(image.getOriginalFilename());
-        image2.setProduct(productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + productId)));
+        image2.setConfig(configOptionRepository.findById(configId)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + configId)));
         return ResponseEntity.status(HttpStatus.CREATED).body(imageService.create(image2));
     }
 
@@ -56,8 +56,8 @@ public class ImageController {
 
     @Operation(summary = "Список изображений", description = "Возвращает список изображений по id продукта")
     @GetMapping("/all")
-    public ResponseEntity<List<ImageReadDTO>> readAll(@RequestParam(required = true) Long productId) {
-        return ResponseEntity.ok(imageService.readAll(productId));
+    public ResponseEntity<List<ImageReadDTO>> readAll(@RequestParam(required = true) Long configId) {
+        return ResponseEntity.ok(imageService.readAll(configId));
     }
 
     @Operation(summary = "Удалить изображение", description = "Удаляет изображение по id")

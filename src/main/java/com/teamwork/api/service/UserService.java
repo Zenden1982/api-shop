@@ -1,6 +1,7 @@
 package com.teamwork.api.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,10 +16,10 @@ import org.springframework.stereotype.Service;
 
 import com.teamwork.api.config.Security.JwtTokenUtils;
 import com.teamwork.api.model.AuthRequest;
-import com.teamwork.api.model.Role;
-import com.teamwork.api.model.User;
 import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
 import com.teamwork.api.model.DTO.UserReadDTO;
+import com.teamwork.api.model.Role;
+import com.teamwork.api.model.User;
 import com.teamwork.api.repository.RoleRepository;
 import com.teamwork.api.repository.UserRepository;
 
@@ -43,7 +44,7 @@ public class UserService implements UserDetailsService {
         user.setPasswordHash(passwordEncoder.encode(user.getPassword()));
 
         // Установка роли по умолчанию
-        Role userRole = roleRepository.findByName("ROLE_USER")
+        Role userRole = roleRepository.findByName("USER")
                 .orElseGet(() -> roleRepository.save(new Role(0, "USER")));
         user.setRoles(List.of(userRole));
 
@@ -68,6 +69,20 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         return UserReadDTO.toUserReadDTO(user);
+    }
+
+    @Transactional
+    public void assignRolesToUser(Long userId, List<String> roleNames) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        List<Role> roles = roleNames.stream()
+                .map(roleName -> roleRepository.findByName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Роль " + roleName + " не найдена")))
+                .collect(Collectors.toList());
+
+        user.setRoles(roles);
+        userRepository.save(user);
     }
 
     @Transactional

@@ -1,5 +1,8 @@
 package com.teamwork.api.model.DTO;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import com.teamwork.api.model.OrderItem;
 
 import lombok.AllArgsConstructor;
@@ -13,30 +16,35 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderItemDTO {
     private Long id;
-    private Long productId;
-    private Integer quantity;
+    private BigDecimal price;
+    // For incoming requests: ids of selected OptionChoice
+    private List<Long> selectedOptionIds;
+    // For responses: full DTOs of selected choices
+    private List<OptionChoiceDTO> selectedOptions;
 
-    /**
-     * Преобразует OrderItem в OrderItemDTO.
-     */
+    /** Преобразует OrderItem в OrderItemDTO. */
     public static OrderItemDTO fromOrderItem(OrderItem orderItem) {
         if (orderItem == null)
             return null;
         return OrderItemDTO.builder()
-                .productId(orderItem.getProduct().getId())
-                .quantity(orderItem.getQuantity())
+                .id(orderItem.getId())
+                .price(orderItem.getPrice())
+                .selectedOptions(orderItem.getSelectedOptions() != null
+                        ? orderItem.getSelectedOptions().stream().map(OptionChoiceDTO::fromOptionChoice).toList()
+                        : null)
                 .build();
     }
 
     /**
-     * Преобразует OrderItemDTO в OrderItem.
+     * Преобразует OrderItemDTO в OrderItem. Связи с OptionChoice должны
+     * устанавливаться в сервисе (по id).
      */
     public static OrderItem toOrderItem(OrderItemDTO dto) {
         if (dto == null)
             return null;
-        OrderItem orderItem = new OrderItem();
-        orderItem.setQuantity(dto.getQuantity());
-        // Связь с продуктом должна быть установлена отдельно
-        return orderItem;
+        OrderItem item = new OrderItem();
+        item.setPrice(dto.getPrice());
+        // selectedOptions / order linkage should be resolved by service layer
+        return item;
     }
 }

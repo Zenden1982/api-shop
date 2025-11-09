@@ -88,7 +88,7 @@ public class ImageService {
     public Image update(Long id, Image entity) {
         return imageRepository.findById(id).map(image -> {
             image.setImage(entity.getImage());
-            image.setProduct(entity.getProduct());
+            image.setConfig(entity.getConfig());
             return imageRepository.save(image);
         }).orElseThrow(() -> {
             throw new RuntimeException("Error updating image" + id);
