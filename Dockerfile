@@ -19,7 +19,8 @@ RUN mvn package -DskipTests
 
 # --- Этап выполнения (Runner) ---
 # Используем легковесный образ OpenJDK для запуска приложения, чтобы итоговый образ был меньше.
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-alpine
+
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
