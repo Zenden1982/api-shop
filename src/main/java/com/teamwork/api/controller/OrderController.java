@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,15 +23,12 @@ import com.teamwork.api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@Validated
 @RequestMapping("/api/v1/orders")
 @SecurityRequirement(name = "BearerAuth")
-@Tag(name = "Orders", description = "Создание и управление заказами.\n\nИнструкция: 1) Зарегистрируйтесь (/api/v1/users POST). 2) Войдите (/api/v1/users/login POST) и получите JWT. 3) Для защищённых эндпоинтов используйте заголовок Authorization: Bearer <JWT>. 4) Для создания заказа отправьте POST /api/v1/orders с телом: { \"userId\": 1, \"items\": [{ \"selectedOptionIds\": [1,2] }], \"shippingAddress\": \"ул. ...\", \"phoneNumber\": \"+7...\" }. 5) Администраторы могут просматривать все заказы.")
+@Tag(name = "Orders", description = "Создание и управление заказами")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -53,7 +49,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderReadDTO> getById(@PathVariable @Positive Long id) {
+    public ResponseEntity<OrderReadDTO> getById(@PathVariable Long id) {
         var opt = orderService.findById(id);
         if (opt.isEmpty())
             return ResponseEntity.notFound().build();
@@ -72,7 +68,7 @@ public class OrderController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<OrderReadDTO> getByUserId(@PathVariable @Positive Long userId) {
+    public ResponseEntity<OrderReadDTO> getByUserId(@PathVariable Long userId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -91,7 +87,7 @@ public class OrderController {
 
     @Operation(summary = "Создать заказ", description = "Создаёт заказ. Пример тела запроса:\n{\n  \"userId\": 1,\n  \"items\": [{ \"productId\": 10, \"quantity\": 2 }],\n  \"shippingAddress\": \"ул. Ленина, 1\",\n  \"phoneNumber\": \"+79991234567\"\n}")
     @PostMapping
-    public ResponseEntity<OrderReadDTO> create(@RequestBody @Valid OrderCreateUpdateDTO dto) {
+    public ResponseEntity<OrderReadDTO> create(@RequestBody OrderCreateUpdateDTO dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -109,7 +105,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         var opt = orderService.findById(id);
         if (opt.isEmpty())
             return ResponseEntity.notFound().build();
@@ -127,8 +123,7 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderReadDTO> update(@PathVariable @Positive Long id,
-            @RequestBody @Valid OrderCreateUpdateDTO dto) {
+    public ResponseEntity<OrderReadDTO> update(@PathVariable Long id, @RequestBody OrderCreateUpdateDTO dto) {
         var opt = orderService.findById(id);
         if (opt.isEmpty())
             return ResponseEntity.notFound().build();

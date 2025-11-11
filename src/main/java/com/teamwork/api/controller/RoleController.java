@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/roles")
 @SecurityRequirement(name = "BearerAuth")
 @RequiredArgsConstructor
-@io.swagger.v3.oas.annotations.tags.Tag(name = "Roles", description = "Управление ролями.\n\nИнструкция: Администрирование ролей. Используйте Authorization: Bearer <JWT> с ролью ADMIN для изменений.")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Roles", description = "Управление ролями")
 public class RoleController {
 
     private final RoleRepository roleRepository;
@@ -31,7 +31,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRole(@PathVariable @jakarta.validation.constraints.Positive Long id) {
+    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
         roleRepository.deleteById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
