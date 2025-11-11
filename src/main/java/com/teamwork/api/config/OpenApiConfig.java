@@ -52,14 +52,13 @@ public class OpenApiConfig {
 
                                 4) Создание заказа
 
-                                - Endpoint: POST /api/orders
+                                - Endpoint: POST /api/v1/orders
                                 - Тело (пример JSON):
 
                                         {
                                                 "userId": 1,
                                                 "items": [
-                                                        { "productId": 10, "quantity": 2 },
-                                                        { "productId": 11, "quantity": 1 }
+                                                        { "selectedOptionIds": [1, 2] }
                                                 ],
                                                 "shippingAddress": "ул. Ленина, 1, Москва",
                                                 "phoneNumber": "+79991234567"
@@ -67,7 +66,7 @@ public class OpenApiConfig {
 
                                 - Описание полей:
                                         - userId: id пользователя, от имени которого оформляется заказ.
-                                        - items: массив позиций, каждая позиция содержит productId и quantity.
+                                        - items: массив позиций, каждая позиция содержит selectedOptionIds.
                                         - shippingAddress: строка с адресом доставки.
                                         - phoneNumber: контактный телефон для доставки.
 

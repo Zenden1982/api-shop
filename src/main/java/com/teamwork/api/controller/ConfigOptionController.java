@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,10 +21,14 @@ import com.teamwork.api.model.DTO.ConfigOptionDTO;
 import com.teamwork.api.repository.ConfigOptionRepository;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @RestController
+@Validated
 @SecurityRequirement(name = "BearerAuth")
-
+@Tag(name = "ConfigOptions", description = "Управление наборами конфигураций и их вариантами (ConfigOption / OptionChoice).\n\nИнструкция: 1) Зарегистрируйтесь (/api/v1/users POST). 2) Выполните логин (/api/v1/users/login POST) и получите JWT. 3) Для защищённых эндпоинтов добавьте заголовок Authorization: Bearer <JWT>. 4) Админские операции (создание/изменение/удаление) доступны только с ролью ADMIN.")
 @RequestMapping("/api/v1/config-options")
 public class ConfigOptionController {
 
@@ -41,14 +46,14 @@ public class ConfigOptionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ConfigOptionDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<ConfigOptionDTO> getById(@PathVariable @Positive Long id) {
         return configOptionRepository.findById(id).map(ConfigOptionDTO::fromConfigOption)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<ConfigOptionDTO> create(@RequestBody ConfigOptionDTO dto) {
+    public ResponseEntity<ConfigOptionDTO> create(@RequestBody @Valid ConfigOptionDTO dto) {
         ConfigOption entity = new ConfigOption();
         entity.setName(dto.getName());
         if (dto.getChoices() != null) {
@@ -68,7 +73,8 @@ public class ConfigOptionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ConfigOptionDTO> update(@PathVariable Long id, @RequestBody ConfigOptionDTO dto) {
+    public ResponseEntity<ConfigOptionDTO> update(@PathVariable @Positive Long id,
+            @RequestBody @Valid ConfigOptionDTO dto) {
         return configOptionRepository.findById(id).map(existing -> {
             if (dto.getName() != null)
                 existing.setName(dto.getName());

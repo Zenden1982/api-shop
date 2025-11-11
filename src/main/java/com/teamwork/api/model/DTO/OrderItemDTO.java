@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.teamwork.api.model.OrderItem;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,10 +17,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderItemDTO {
     private Long id;
+
+    // Цена обычно вычисляется на сервере, поэтому валидация на входе не нужна
     private BigDecimal price;
-    // For incoming requests: ids of selected OptionChoice
+
+    // Для входящих запросов: ID выбранных вариантов (OptionChoice)
+    @NotEmpty(message = "Каждый товар в заказе должен иметь хотя бы одну выбранную опцию")
+    // Дополнительно можно создать кастомную аннотацию, чтобы проверить,
+    // что все ID в списке - положительные числа, если это необходимо.
     private List<Long> selectedOptionIds;
-    // For responses: full DTOs of selected choices
+
+    // Для исходящих ответов: полные DTO выбранных вариантов
     private List<OptionChoiceDTO> selectedOptions;
 
     /** Преобразует OrderItem в OrderItemDTO. */

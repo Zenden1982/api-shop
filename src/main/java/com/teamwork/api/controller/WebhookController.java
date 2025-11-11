@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "BearerAuth")
 @Slf4j
-@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhooks", description = "Получение вебхуков")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhooks", description = "Получение вебхуков.\n\nИнструкция: 1) Для защищённых webhook-операций используйте Authorization: Bearer <JWT>. 2) Эндпоинт /api/v1/webhooks/yookassa используется для обработки уведомлений от YooKassa.")
 public class WebhookController {
 
     private final WebhookService webhookService;
