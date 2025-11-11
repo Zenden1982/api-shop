@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.teamwork.api.model.OrderItem;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +17,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderItemDTO {
     private Long id;
+
     private BigDecimal price;
+
     // For incoming requests: ids of selected OptionChoice
+    @NotEmpty(message = "selectedOptionIds must not be empty")
     private List<Long> selectedOptionIds;
     // For responses: full DTOs of selected choices
     private List<OptionChoiceDTO> selectedOptions;

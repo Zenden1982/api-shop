@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.teamwork.api.model.ConfigOption;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +12,10 @@ import lombok.Data;
 @Builder
 public class ConfigOptionDTO {
     private Long id;
+
+    @NotBlank(message = "name is required")
     private String name;
+
     private List<OptionChoiceDTO> choices;
 
     public static ConfigOptionDTO fromConfigOption(ConfigOption o) {

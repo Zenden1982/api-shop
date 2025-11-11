@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/users")
 @SecurityRequirement(name = "BearerAuth")
-@Tag(name = "Users", description = "Регистрация, аутентификация и управление пользователями")
+@Tag(name = "Users", description = "Регистрация, аутентификация и управление пользователями.\n\nИнструкция: 1) Для регистрации используйте POST /api/v1/users с телом {username, password, ...}. 2) Для логина используйте POST /api/v1/users/login с {username, password} — в ответ вернётся JWT. 3) Для вызовов защищённых методов добавляйте заголовок Authorization: Bearer <JWT>.")
 @RequiredArgsConstructor
 @CrossOrigin
 public class UserController {
@@ -42,7 +42,7 @@ public class UserController {
 
     @Operation(summary = "Регистрация пользователя", description = "Создаёт нового пользователя. Пример тела запроса: {username, firstName, lastName, email, phoneNumber, password}.")
     @PostMapping
-    public ResponseEntity<UserReadDTO> createUser(@RequestBody UserCreateUpdateDTO userDTO) {
+    public ResponseEntity<UserReadDTO> createUser(@RequestBody @jakarta.validation.Valid UserCreateUpdateDTO userDTO) {
         UserReadDTO createdUser = userService.createUser(userDTO);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
@@ -63,7 +63,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserReadDTO> updateUser(@PathVariable Long id, @RequestBody UserCreateUpdateDTO userDTO) {
+    public ResponseEntity<UserReadDTO> updateUser(@PathVariable @jakarta.validation.constraints.Positive Long id,
+            @RequestBody @jakarta.validation.Valid UserCreateUpdateDTO userDTO) {
         UserReadDTO updatedUser = userService.updateUser(id, userDTO);
         return ResponseEntity.ok(updatedUser);
     }
@@ -76,7 +77,7 @@ public class UserController {
 
     @Operation(summary = "Аутентификация (получение JWT)", description = "Логин пользователя. Пример тела запроса: {username, password}. Возвращает JWT строку.")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest user) {
+    public ResponseEntity<String> login(@RequestBody @jakarta.validation.Valid AuthRequest user) {
         return ResponseEntity.ok(userService.generateToken(user, authenticationManager));
     }
 
