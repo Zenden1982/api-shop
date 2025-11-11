@@ -21,6 +21,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,12 +42,20 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @NotNull(message = "Имя пользователя не может быть пустым")
     private String username;
 
+    @Column(nullable = false)
+    @NotNull(message = "Имя не может быть пустым")
     private String firstName;
 
+    @Column(nullable = false)
+    @NotNull(message = "Фамилия не может быть пустой")
     private String lastName;
 
+    @Column(nullable = false, unique = true)
+    @Email(message = "Некорректный формат email")
+    @NotNull(message = "Email не может быть пустым")
     private String email;
 
     private String phoneNumber;

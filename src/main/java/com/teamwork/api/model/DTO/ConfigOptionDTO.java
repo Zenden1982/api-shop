@@ -29,4 +29,11 @@ public class ConfigOptionDTO {
                                 : null)
                 .build();
     }
+
+    public ConfigOption toConfigOption() {
+        ConfigOption configOption = new ConfigOption();
+        configOption.setId(this.id);
+        configOption.setName(this.name);
+        return configOption;
+    }
 }

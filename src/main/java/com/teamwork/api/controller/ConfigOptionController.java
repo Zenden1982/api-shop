@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.teamwork.api.model.ConfigOption;
-import com.teamwork.api.model.OptionChoice;
 import com.teamwork.api.model.DTO.ConfigOptionDTO;
 import com.teamwork.api.repository.ConfigOptionRepository;
 
@@ -53,47 +52,20 @@ public class ConfigOptionController {
     }
 
     @PostMapping
-    public ResponseEntity<ConfigOptionDTO> create(@RequestBody @Valid ConfigOptionDTO dto) {
-        ConfigOption entity = new ConfigOption();
-        entity.setName(dto.getName());
-        if (dto.getChoices() != null) {
-            List<OptionChoice> choices = dto.getChoices().stream().map(c -> {
-                OptionChoice oc = new OptionChoice();
-                oc.setId(c.getId());
-                oc.setChoiceValue(c.getValue());
-                oc.setPrice(c.getPrice());
-                oc.setOption(entity);
-                return oc;
-            }).collect(Collectors.toList());
-            entity.setChoices(choices);
-        }
-        ConfigOption saved = configOptionRepository.save(entity);
-        return ResponseEntity.created(URI.create("/api/v1/config-options/" + saved.getId()))
-                .body(ConfigOptionDTO.fromConfigOption(saved));
+    public ResponseEntity<ConfigOptionDTO> create(@RequestBody @Valid ConfigOptionDTO configOptionDTO) {
+        ConfigOption configOption = configOptionRepository.save(configOptionDTO.toConfigOption());
+        return ResponseEntity.created(URI.create("/api/v1/config-options/" + configOption.getId()))
+                .body(ConfigOptionDTO.fromConfigOption(configOption));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ConfigOptionDTO> update(@PathVariable @Positive Long id,
-            @RequestBody @Valid ConfigOptionDTO dto) {
-        return configOptionRepository.findById(id).map(existing -> {
-            if (dto.getName() != null)
-                existing.setName(dto.getName());
-
-            if (dto.getChoices() != null) {
-                List<OptionChoice> choices = dto.getChoices().stream().map(c -> {
-                    OptionChoice oc = new OptionChoice();
-                    oc.setId(c.getId());
-                    oc.setChoiceValue(c.getValue());
-                    oc.setPrice(c.getPrice());
-                    oc.setOption(existing);
-                    return oc;
-                }).collect(Collectors.toList());
-                existing.setChoices(choices);
-            }
-
-            ConfigOption saved = configOptionRepository.save(existing);
-            return ResponseEntity.ok(ConfigOptionDTO.fromConfigOption(saved));
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+            @RequestBody @Valid ConfigOptionDTO configOptionDTO) {
+        ConfigOption configOption = configOptionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("ConfigOption not found"));
+        configOption.updateFromDTO(configOptionDTO);
+        configOptionRepository.save(configOption);
+        return ResponseEntity.ok(ConfigOptionDTO.fromConfigOption(configOption));
     }
 
     @DeleteMapping("/{id}")
