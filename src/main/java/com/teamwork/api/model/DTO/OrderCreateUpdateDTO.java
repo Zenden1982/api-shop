@@ -1,12 +1,8 @@
 package com.teamwork.api.model.DTO;
 
-import java.util.List;
-
 import com.teamwork.api.model.Enum.OrderStatus;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
@@ -20,9 +16,8 @@ public class OrderCreateUpdateDTO {
     @Positive(message = "ID пользователя должен быть положительным числом")
     private Long userId;
 
-    @NotEmpty(message = "Заказ должен содержать хотя бы один товар")
-    @Valid // Включаем вложенную валидацию для каждого элемента списка
-    private List<OrderItemDTO> items;
+    @NotNull(message = "Необходимо выбрать вариант товара")
+    private Long selectedOptionId;
 
     @NotBlank(message = "Адрес доставки не может быть пустым")
     private String shippingAddress;
