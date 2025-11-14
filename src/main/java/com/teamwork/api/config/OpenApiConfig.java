@@ -15,91 +15,105 @@ public class OpenApiConfig {
         @Bean
         public OpenAPI customOpenAPI() {
                 String guide = """
-                                # Быстрый старт API
+                                # Быстрый старт по API "Окно в Россию"
 
-                                1) Регистрация
+                                Это API для управления интернет-магазином штор. Оно позволяет пользователям просматривать каталог, управлять корзиной, оформлять заказы и оплачивать их. Администраторы могут управлять каталогом товаров, пользователями и заказами.
 
-                                - Endpoint: POST /api/v1/users
-                                - Тело (пример JSON):
+                                ---
 
-                                        {
-                                                "username": "ivan",
-                                                "firstName": "Ivan",
-                                                "lastName": "Petrov",
-                                                "email": "ivan@example.com",
-                                                "phoneNumber": "+79991234567",
-                                                "password": "Secret123"
-                                        }
+                                ## 1. Аутентификация
 
-                                - Результат: 201 Created и объект пользователя (UserReadDTO)
+                                ### 1.1. Регистрация нового пользователя
+                                - **Endpoint:** `POST /api/v1/users/register`
+                                - **Описание:** Создает нового пользователя с ролью `ROLE_USER` и личную корзину для него.
+                                - **Тело запроса:**
+                                  ```
+                                  {
+                                    "username": "ivan",
+                                    "firstName": "Ivan",
+                                    "lastName": "Petrov",
+                                    "email": "ivan@example.com",
+                                    "phoneNumber": "+79991234567",
+                                    "password": "SecretPassword123"
+                                  }
+                                  ```
 
-                                2) Аутентификация (получение JWT)
+                                ### 1.2. Вход и получение JWT
+                                - **Endpoint:** `POST /api/v1/users/login`
+                                - **Описание:** Аутентифицирует пользователя и возвращает JWT.
+                                - **Тело запроса:**
+                                  ```
+                                  {
+                                    "username": "ivan",
+                                    "password": "SecretPassword123"
+                                  }
+                                  ```
+                                - **Результат:** `200 OK` с JWT в теле ответа. **Скопируйте этот токен.**
 
-                                - Endpoint: POST /api/v1/users/login
-                                - Тело (пример JSON):
+                                ### 1.3. Использование JWT
+                                - Для доступа к защищенным эндпоинтам используйте кнопку **"Authorize"** в правом верхнем углу и вставьте ваш токен в формате `Bearer <ВАШ_JWT>`.
 
-                                        {
-                                                "username": "ivan",
-                                                "password": "Secret123"
-                                        }
+                                ---
 
-                                - Результат: 200 OK, в теле возвращается JWT (строка). Скопируйте токен.
+                                ## 2. Основной сценарий покупки (для пользователя)
 
-                                3) Использование JWT
+                                ### 2.1. Просмотр каталога
+                                - **Endpoint:** `GET /api/v1/products`
+                                - **Описание:** Получить список доступных товаров (штор). Этот эндпоинт публичен.
 
-                                - Для защищённых эндпоинтов добавьте HTTP-заголовок:
-                                        Authorization: Bearer <ВАШ_JWT>
+                                ### 2.2. Добавление товара в корзину
+                                - **Endpoint:** `POST /api/v1/cart/items` **(требует аутентификации)**
+                                - **Описание:** Добавляет указанный продукт в вашу корзину.
+                                - **Тело запроса:**
+                                  ```
+                                  {
+                                    "productId": 1,
+                                    "quantity": 2
+                                  }
+                                  ```
 
-                                4) Создание заказа
+                                ### 2.3. Просмотр корзины
+                                - **Endpoint:** `GET /api/v1/cart` **(требует аутентификации)**
+                                - **Описание:** Посмотреть текущее содержимое своей корзины.
 
-                                - Endpoint: POST /api/v1/orders
-                                - Тело (пример JSON):
+                                ### 2.4. Оформление заказа
+                                - **Endpoint:** `POST /api/v1/orders/from-cart` **(требует аутентификации)**
+                                - **Описание:** Создает заказ на основе товаров в корзине. После успешного создания заказа корзина очищается, и инициируется процесс оплаты.
+                                - **Тело запроса:**
+                                  ```
+                                  {
+                                    "shippingAddress": "ул. Ленина, 1, Москва",
+                                    "phoneNumber": "+79991234567"
+                                  }
+                                  ```
+                                - **Результат:** `201 Created` с информацией о заказе, включая детали платежа (например, `confirmationUrl` для перехода на страницу YooKassa).
 
-                                        {
-                                                "userId": 1,
-                                                "items": [
-                                                        { "selectedOptionIds": [1, 2] }
-                                                ],
-                                                "shippingAddress": "ул. Ленина, 1, Москва",
-                                                "phoneNumber": "+79991234567"
-                                        }
+                                ---
 
-                                - Описание полей:
-                                        - userId: id пользователя, от имени которого оформляется заказ.
-                                        - items: массив позиций, каждая позиция содержит selectedOptionIds.
-                                        - shippingAddress: строка с адресом доставки.
-                                        - phoneNumber: контактный телефон для доставки.
+                                ## 3. Администрирование (требуется роль `ROLE_ADMIN`)
 
-                                - Результат: 201 Created и объект заказа (OrderReadDTO). Платёж создаётся автоматически и возвращается confirmationUrl, если требуется перенаправление на страницу оплаты.
-
-                                5) Статусы платежа
-
-                                - Endpoint: GET /api/v1/payments/status/{transactionId}
-                                - Результат: PaymentStatusDTO с полем status (PENDING / SUCCEEDED / CANCELED / WAITING_FOR_CAPTURE)
-
-                                6) Общие советы
-
-                                - Все защищённые методы помечены схемой BearerAuth в Swagger UI. Нажмите кнопку "Authorize" и вставьте: Bearer <ваш токен>.
-                                - Поля, которые не передаются в DTO при обновлении сущности, не будут перезаписаны (partial update поддерживается на backend).
+                                Администраторы имеют доступ к дополнительным эндпоинтам для управления:
+                                - **Пользователями:** `GET, PUT, DELETE /api/v1/users/{id}`, `POST /api/v1/users/{id}/roles`
+                                - **Продуктами:** `POST, PUT, DELETE /api/v1/products`
+                                - **Заказами:** `GET /api/v1/orders`, `PUT /api/v1/orders/{id}`
+                                - **Платежами:** `POST /api/v1/payments/capture/{id}`, `POST /api/v1/payments/cancel/{id}`
+                                - **Вебхуками:** `POST, GET, DELETE /api/v1/webhooks`
 
                                 """;
 
                 return new OpenAPI()
-                                // сервера
                                 .addServersItem(new Server()
                                                 .url("https://окно-в.рф")
                                                 .description("Production Server (HTTPS)"))
-
                                 .addServersItem(new Server()
                                                 .url("https://www.окно-в.рф")
                                                 .description("Production Server with WWW (HTTPS)"))
-
                                 .addServersItem(new Server()
                                                 .url("http://localhost:8080")
                                                 .description("Local Server (HTTP)"))
                                 .info(new io.swagger.v3.oas.models.info.Info()
-                                                .title("Окно в Россию")
+                                                .title("API \"Окно в Россию\"")
                                                 .description(guide)
-                                                .version("0.0.1"));
+                                                .version("1.0.0"));
         }
 }

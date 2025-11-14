@@ -15,7 +15,6 @@ public class ProductReadDTO {
     private String name;
     private String description;
     private BigDecimal price;
-    private String imageUrl;
     Integer stockQuantity;
 
     /**
@@ -34,7 +33,6 @@ public class ProductReadDTO {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
-                .imageUrl(product.getImageUrl())
                 .build();
     }
 }

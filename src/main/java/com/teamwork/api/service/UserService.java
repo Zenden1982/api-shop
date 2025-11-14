@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -18,10 +18,10 @@ import com.teamwork.api.config.Security.JwtTokenUtils;
 import com.teamwork.api.exception.UserAlreadyExistsException;
 import com.teamwork.api.model.AuthRequest;
 import com.teamwork.api.model.Cart;
-import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
-import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.model.Role;
 import com.teamwork.api.model.User;
+import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
+import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.repository.CartRepository;
 import com.teamwork.api.repository.RoleRepository;
 import com.teamwork.api.repository.UserRepository;
@@ -66,8 +66,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public Page<User> getAllUsers(int page, int size) {
-        return userRepository.findAll(PageRequest.of(page, size));
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     @Transactional

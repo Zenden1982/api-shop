@@ -3,7 +3,6 @@ package com.teamwork.api.service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +11,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.teamwork.api.model.DTO.ImageReadDTO;
+import com.teamwork.api.exception.ResourceNotFoundException;
 import com.teamwork.api.model.Image;
+import com.teamwork.api.model.DTO.ImageReadDTO;
 import com.teamwork.api.repository.ImageRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 @Component
@@ -54,6 +56,7 @@ public class ImageService {
         return Optional.empty();
     }
 
+    @Transactional
     public Image create(Image entity) {
         try {
             return imageRepository.save(entity);
@@ -62,16 +65,19 @@ public class ImageService {
         }
     }
 
+    @Transactional
     public ImageReadDTO read(Long id) {
         return imageRepository.findById(id).map(this::map)
-                .orElseThrow(() -> new RuntimeException("Error reading image" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Ошибка чтения изображения" + id));
     }
 
-    public List<ImageReadDTO> readAll(Long productId) {
+    @Transactional
+    public ImageReadDTO readImageByProductId(Long productId) {
         try {
 
-            return imageRepository.findByProductId(productId).stream()
-                    .map(this::map).toList();
+            return map(imageRepository.findByProductId(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "На найдено изображение для продукта с ID " + productId)));
 
         } catch (DataAccessException e) {
             throw new RuntimeException("Database error while reading images", e);

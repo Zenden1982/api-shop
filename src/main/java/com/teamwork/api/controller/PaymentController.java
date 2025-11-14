@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,22 +34,25 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @Operation(summary = "Создать платёж для заказа", description = "Создаёт платёж через YooKassa и возвращает информацию c confirmationUrl (если нужно перенаправление).")
+    @Operation(summary = "Создать платёж для заказа", description = "Создаёт платёж и возвращает ссылку для оплаты. Доступно только владельцу заказа.")
     @PostMapping("/create/{orderId}")
+    @PreAuthorize("@orderRepository.findById(#orderId).get().user.username == authentication.name")
     public ResponseEntity<Payment> createPayment(@PathVariable @Positive Long orderId) {
         Payment payment = paymentService.createPayment(orderId);
         return ResponseEntity.status(HttpStatus.CREATED).body(payment);
     }
 
-    @Operation(summary = "Получить статус платежа", description = "Возвращает статус платежа по transactionId. Возвращаемая структура: PaymentStatusDTO.")
+    @Operation(summary = "Получить статус платежа", description = "Возвращает статус платежа. Доступно владельцу заказа или администратору.")
     @GetMapping("/status/{transactionId}")
+    @PreAuthorize("hasRole('ADMIN') or @paymentRepository.findByTransactionId(#transactionId).get().order.user.username == authentication.name")
     public ResponseEntity<PaymentStatusDTO> getStatus(@PathVariable String transactionId) {
         PaymentStatusDTO status = paymentService.getPaymentStatus(transactionId);
         return ResponseEntity.ok(status);
     }
 
-    @Operation(summary = "Захват платежа", description = "Захватывает ранее авторизованный платёж. Передайте transactionId и amount в query-параметре.")
+    @Operation(summary = "Захват платежа (только для админа)", description = "Захватывает ранее авторизованный платёж.")
     @PostMapping("/capture/{transactionId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> capture(@PathVariable String transactionId,
             @RequestParam("amount") @DecimalMin("0.01") BigDecimal amount) {
         Payment payment = paymentService.capturePayment(transactionId, amount);

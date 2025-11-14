@@ -60,7 +60,6 @@ public class OrderService {
             throw new CartIsEmptyException("Нельзя создать заказ из пустой корзины");
         }
 
-        // --- Шаг 2: Создание и наполнение объекта Order ---
         Order order = new Order();
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING); // Начальный статус
@@ -83,11 +82,8 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalPrice(totalPrice);
 
-        // --- Шаг 3: Сохранение заказа в БД ---
-        // Используем исходный объект 'order', т.к. он находится в управляемом состоянии
         Order savedOrder = orderRepository.save(order);
 
-        // --- Шаг 4: Создание платежа для заказа ---
         try {
             Payment payment = paymentService.createPayment(savedOrder.getId());
             savedOrder.setPayment(payment);
@@ -96,14 +92,9 @@ public class OrderService {
             log.error("Не удалось создать платеж для заказа ID: {}. Ошибка: {}", order.getId(), e.getMessage());
         }
 
-        // --- Шаг 5: Очистка корзины ---
         cart.getCartItems().clear();
         cartRepository.save(cart);
 
-        // --- Шаг 6: Возвращаем DTO ---
-        // Используем оригинальный, полностью заполненный объект 'order' для создания
-        // DTO.
-        // Это решает проблему с NullPointerException.
         return OrderReadDTO.fromOrder(order);
     }
 

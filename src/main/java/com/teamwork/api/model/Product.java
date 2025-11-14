@@ -29,7 +29,6 @@ public class Product {
     String name;
     String description;
     BigDecimal price;
-    String imageUrl;
     Integer stockQuantity;
 
     Double height;

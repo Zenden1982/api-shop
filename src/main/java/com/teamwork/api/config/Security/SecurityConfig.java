@@ -56,7 +56,6 @@ public class SecurityConfig {
                                                                 "/api/v1/products/**" // Весь каталог продуктов
                                                 ).permitAll()
 
-                                                // --- ВСЕ ОСТАЛЬНЫЕ ЗАПРОСЫ ТРЕБУЮТ АУТЕНТИФИКАЦИИ ---
                                                 .anyRequest().permitAll())
 
                                 .sessionManagement(session -> session
