@@ -1,8 +1,11 @@
 package com.teamwork.api.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.teamwork.api.model.DTO.OrderCreateUpdateDTO;
 import com.teamwork.api.model.DTO.OrderReadDTO;
-import com.teamwork.api.repository.UserRepository;
+import com.teamwork.api.model.DTO.OrderUpdateAdminDTO;
 import com.teamwork.api.service.OrderService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,117 +35,64 @@ import lombok.RequiredArgsConstructor;
 @Validated
 @RequestMapping("/api/v1/orders")
 @SecurityRequirement(name = "BearerAuth")
-@Tag(name = "Orders", description = "Создание и управление заказами.\n\nИнструкция: 1) Зарегистрируйтесь (/api/v1/users POST). 2) Войдите (/api/v1/users/login POST) и получите JWT. 3) Для защищённых эндпоинтов используйте заголовок Authorization: Bearer <JWT>. 4) Для создания заказа отправьте POST /api/v1/orders с телом: { \"userId\": 1, \"items\": [{ \"selectedOptionIds\": [1,2] }], \"shippingAddress\": \"ул. ...\", \"phoneNumber\": \"+7...\" }. 5) Администраторы могут просматривать все заказы.")
+@Tag(name = "Orders", description = "Управление заказами")
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserRepository userRepository;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Получить все заказы (только для админа)")
     public ResponseEntity<Page<OrderReadDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin) {
-            return ResponseEntity.status(403).build();
-        }
         Page<OrderReadDTO> orders = orderService.findAll(page, size);
         return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @orderService.findById(#id).get().user.username == authentication.name")
+    @Operation(summary = "Получить заказ по ID")
     public ResponseEntity<OrderReadDTO> getById(@PathVariable @Positive Long id) {
-        var opt = orderService.findById(id);
-        if (opt.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        OrderReadDTO dto = opt.get();
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        // allow if admin or order owner
-        if (isAdmin || (dto.getUser() != null && currentUsername.equals(dto.getUser().getUsername()))) {
-            return ResponseEntity.ok(dto);
-        }
-        return ResponseEntity.status(403).build();
+        return orderService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<OrderReadDTO> getByUserId(@PathVariable @Positive Long userId) {
+    @GetMapping("/my-orders")
+    @Operation(summary = "Получить все заказы текущего пользователя")
+    public ResponseEntity<List<OrderReadDTO>> getMyOrders() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (isAdmin) {
-            return ResponseEntity.ok(orderService.findByUserId(userId));
-        }
-
-        // if not admin, allow only if the requested userId equals current user's id
-        var currentUserOpt = userRepository.findByUsername(currentUsername);
-        if (currentUserOpt.isPresent() && currentUserOpt.get().getId().equals(userId)) {
-            return ResponseEntity.ok(orderService.findByUserId(userId));
-        }
-        return ResponseEntity.status(403).build();
+        // Сервис должен найти пользователя по имени и затем его заказы
+        List<OrderReadDTO> userOrders = orderService.findAllByUsername(currentUsername);
+        return ResponseEntity.ok(userOrders);
     }
 
-    @Operation(summary = "Создать заказ", description = "Создаёт заказ. Пример тела запроса:\n{\n  \"userId\": 1,\n  \"items\": [{ \"productId\": 10, \"quantity\": 2 }],\n  \"shippingAddress\": \"ул. Ленина, 1\",\n  \"phoneNumber\": \"+79991234567\"\n}")
-    @PostMapping
-    public ResponseEntity<OrderReadDTO> create(@RequestBody @Valid OrderCreateUpdateDTO dto) {
+    @PostMapping("/from-cart")
+    @Operation(summary = "Создать заказ из корзины", description = "Создает заказ на основе текущего содержимого корзины пользователя. В теле запроса нужно передать только адрес и телефон.")
+    public ResponseEntity<OrderReadDTO> createOrderFromCart(@Valid @RequestBody OrderCreateUpdateDTO dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        // if not admin, user can create only orders for themselves
-        if (!isAdmin) {
-            var currentUserOpt = userRepository.findByUsername(currentUsername);
-            if (currentUserOpt.isEmpty() || !currentUserOpt.get().getId().equals(dto.getUserId())) {
-                return ResponseEntity.status(403).build();
-            }
-        }
-
-        OrderReadDTO created = orderService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
-        var opt = orderService.findById(id);
-        if (opt.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        OrderReadDTO dto = opt.get();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin && !(dto.getUser() != null && currentUsername.equals(dto.getUser().getUsername()))) {
-            return ResponseEntity.status(403).build();
-        }
-
-        orderService.delete(id);
-        return ResponseEntity.noContent().build();
+        OrderReadDTO createdOrder = orderService.createFromCart(currentUsername, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Обновить заказ (только для админа)", description = "Позволяет администратору изменить статус, адрес или телефон заказа.")
     public ResponseEntity<OrderReadDTO> update(@PathVariable @Positive Long id,
-            @RequestBody @Valid OrderCreateUpdateDTO dto) {
-        var opt = orderService.findById(id);
-        if (opt.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        OrderReadDTO existing = opt.get();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin && !(existing.getUser() != null && currentUsername.equals(existing.getUser().getUsername()))) {
-            return ResponseEntity.status(403).build();
-        }
-
+            @Valid @RequestBody OrderUpdateAdminDTO dto) {
         OrderReadDTO updated = orderService.update(id, dto);
         return ResponseEntity.ok(updated);
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Удалить заказ (только для админа)")
+    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
+        orderService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

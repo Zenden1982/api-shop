@@ -30,8 +30,8 @@ public class Review {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "config_id")
-    private ConfigOption config;
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @Column(length = 2000)
     private String text;

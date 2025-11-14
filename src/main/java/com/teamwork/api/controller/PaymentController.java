@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "BearerAuth")
-@Tag(name = "Payments", description = "Создание платежей и проверка статусов.\n\nИнструкция: 1) Создайте заказ и получите его id. 2) Выполните логин и добавьте Authorization: Bearer <JWT>. 3) Вызовите POST /api/v1/payments/create/{orderId} для создания платежа; в ответ может прийти confirmationUrl для редиректа. 4) Используйте GET /api/v1/payments/status/{transactionId} для проверки статуса.")
+@Tag(name = "Payments", description = "Создание платежей и проверка статусов.")
 @Validated
 public class PaymentController {
 

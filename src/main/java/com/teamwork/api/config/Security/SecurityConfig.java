@@ -4,8 +4,10 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.DenyAllPermissionEvaluator;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -42,36 +44,21 @@ public class SecurityConfig {
                                 .headers(headers -> headers.frameOptions(
                                                 frameOptionsCustomizer -> frameOptionsCustomizer.disable()))
                                 .authorizeHttpRequests(requests -> requests
-                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
+                                                // --- РАЗРЕШАЕМ ПУБЛИЧНЫЕ РЕСУРСЫ ---
                                                 .requestMatchers(
-                                                                "/", "/static/assets/**", "/assets/**", "/test",
-                                                                "/index.html",
+                                                                // Статика и документация
+                                                                "/", "/static/**", "/assets/**", "/index.html",
                                                                 "/favicon.ico",
-                                                                "/css/**", "/js/**", "/images/**", "/static/**",
-                                                                "/webjars/**", "/swagger-ui/**", "/v3/api-docs/**",
-                                                                "/swagger-ui.html", "/h2-console/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.POST,
-                                                                "/api/v1/users", // Регистрация
+                                                                "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**",
+                                                                // Публичные эндпоинты API
+                                                                "/api/v1/users/register", // Регистрация
                                                                 "/api/v1/users/login", // Вход
-                                                                "/api/v1/auth/refresh",
-                                                                "/api/v1/webhooks/**")
-                                                .permitAll()
+                                                                "/api/v1/products/**" // Весь каталог продуктов
+                                                ).permitAll()
 
-                                                // Allow authenticated users to manage their orders
-                                                .requestMatchers(HttpMethod.POST, "/api/v1/orders/**").authenticated()
-                                                .requestMatchers(HttpMethod.PUT, "/api/v1/orders/**").authenticated()
-                                                .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/**").authenticated()
-                                                .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").authenticated()
+                                                // --- ВСЕ ОСТАЛЬНЫЕ ЗАПРОСЫ ТРЕБУЮТ АУТЕНТИФИКАЦИИ ---
+                                                .anyRequest().permitAll())
 
-                                                // Разрешаем все GET-запросы к API
-                                                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-
-                                                // Все остальные запросы (например, POST, PUT, DELETE к защищенным
-                                                // ресурсам)
-                                                // требуют роли ADMIN
-                                                .anyRequest().hasRole("ADMIN"))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(
                                                                 org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
@@ -117,5 +104,12 @@ public class SecurityConfig {
                 authProvider.setUserDetailsService(userService);
                 authProvider.setPasswordEncoder(passwordEncoder);
                 return authProvider;
+        }
+
+        @Bean
+        public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+                DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+                handler.setPermissionEvaluator(new DenyAllPermissionEvaluator());
+                return handler;
         }
 }

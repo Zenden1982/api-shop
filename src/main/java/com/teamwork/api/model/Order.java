@@ -2,6 +2,7 @@ package com.teamwork.api.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,6 +19,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -35,8 +37,6 @@ public class Order {
     @ManyToOne
     private User user;
 
-    private Long selectedOptionId;
-
     private BigDecimal totalPrice;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
@@ -50,6 +50,9 @@ public class Order {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;

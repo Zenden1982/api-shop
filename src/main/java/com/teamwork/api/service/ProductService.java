@@ -1,0 +1,69 @@
+package com.teamwork.api.service;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.teamwork.api.exception.ResourceNotFoundException;
+import com.teamwork.api.model.Product;
+import com.teamwork.api.model.DTO.ProductCreateUpdateDTO;
+import com.teamwork.api.model.DTO.ProductReadDTO;
+import com.teamwork.api.repository.ProductRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ProductService {
+
+    private final ProductRepository productRepository;
+
+    @Transactional(readOnly = true)
+    public Page<ProductReadDTO> findAll(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(ProductReadDTO::fromProduct);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductReadDTO findById(Long id) {
+        return productRepository.findById(id)
+                .map(ProductReadDTO::fromProduct)
+                .orElseThrow(() -> new ResourceNotFoundException("Продукт с ID " + id + " не найден"));
+    }
+
+    @Transactional
+    public ProductReadDTO create(ProductCreateUpdateDTO dto) {
+        Product product = new Product();
+        mapDtoToEntity(dto, product);
+        Product savedProduct = productRepository.save(product);
+        return ProductReadDTO.fromProduct(savedProduct);
+    }
+
+    @Transactional
+    public ProductReadDTO update(Long id, ProductCreateUpdateDTO dto) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Продукт с ID " + id + " не найден"));
+        mapDtoToEntity(dto, product);
+        Product updatedProduct = productRepository.save(product);
+        return ProductReadDTO.fromProduct(updatedProduct);
+    }
+
+    public void delete(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Продукт с ID " + id + " не найден");
+        }
+        productRepository.deleteById(id);
+    }
+
+    /**
+     * Вспомогательный метод для маппинга полей из DTO в сущность.
+     */
+    private void mapDtoToEntity(ProductCreateUpdateDTO dto, Product product) {
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setImageUrl(dto.getImageUrl());
+        product.setStockQuantity(dto.getStockQuantity());
+    }
+}

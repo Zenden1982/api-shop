@@ -1,7 +1,6 @@
 package com.teamwork.api.model;
 
-import java.math.BigDecimal;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,18 +12,22 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "option_choice")
-public class OptionChoice {
+@Table(name = "order_items")
+public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
-    String choiceValue;
-
-    BigDecimal price;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "option_id")
-    ConfigOption option;
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @Column(nullable = false)
+    private int quantity;
+
 }

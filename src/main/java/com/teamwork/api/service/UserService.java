@@ -15,11 +15,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.teamwork.api.config.Security.JwtTokenUtils;
+import com.teamwork.api.exception.UserAlreadyExistsException;
 import com.teamwork.api.model.AuthRequest;
+import com.teamwork.api.model.Cart;
 import com.teamwork.api.model.DTO.UserCreateUpdateDTO;
 import com.teamwork.api.model.DTO.UserReadDTO;
 import com.teamwork.api.model.Role;
 import com.teamwork.api.model.User;
+import com.teamwork.api.repository.CartRepository;
 import com.teamwork.api.repository.RoleRepository;
 import com.teamwork.api.repository.UserRepository;
 
@@ -36,10 +39,17 @@ public class UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final CartRepository cartRepository;
     private final JwtTokenUtils jwtTokenUtils;
 
     @Transactional
     public UserReadDTO createUser(UserCreateUpdateDTO userDTO) {
+        if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException("Пользователь с таким именем уже существует");
+        }
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
+        }
         User user = UserCreateUpdateDTO.toUser(userDTO);
         user.setPasswordHash(passwordEncoder.encode(user.getPassword()));
 
@@ -48,7 +58,10 @@ public class UserService implements UserDetailsService {
                 .orElseGet(() -> roleRepository.save(new Role(0, "USER")));
         user.setRoles(List.of(userRole));
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        Cart newUserCart = new Cart();
+        newUserCart.setUser(savedUser); // Привязываем корзину к только что созданному пользователю
+        cartRepository.save(newUserCart);
         return UserReadDTO.toUserReadDTO(user);
     }
 
