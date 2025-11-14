@@ -56,7 +56,8 @@ public class UserController {
 
     // --- ЭНДПОИНТЫ ДЛЯ АДМИНИСТРАТОРОВ ---
 
-    @Operation(summary = "Получить список всех пользователей", description = "Доступно только администраторам.")
+    @Operation(summary = "Получить список всех пользователей", description = "Доступно только администраторам. Сортировка пишется например: \"sort\": \"username,asc\""
+            + " или  \"sort\": \"username,desc\"")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "BearerAuth")

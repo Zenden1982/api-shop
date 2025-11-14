@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -35,5 +36,18 @@ public class GlobalExceptionHandler {
         body.put("message", "Произошла внутренняя ошибка сервера");
         body.put("timestamp", LocalDateTime.now());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put("error", "Forbidden");
+        body.put("message", "Доступ запрещен. У вас нет необходимых прав для выполнения этого действия.");
+        // ex.getMessage() здесь обычно содержит техническую информацию, лучше
+        // использовать свое сообщение.
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+
     }
 }
