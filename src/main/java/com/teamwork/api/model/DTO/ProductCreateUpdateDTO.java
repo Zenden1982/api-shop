@@ -27,7 +27,6 @@ public class ProductCreateUpdateDTO {
 
     private Double height;
     private Double width;
-    private Double length;
 
     @NotNull(message = "Количество на складе не может быть пустым")
     @Min(value = 0, message = "Количество на складе не может быть отрицательным")

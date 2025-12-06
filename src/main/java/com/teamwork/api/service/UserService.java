@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.teamwork.api.config.Security.JwtTokenUtils;
+import com.teamwork.api.exception.ResourceNotFoundException;
 import com.teamwork.api.exception.UserAlreadyExistsException;
 import com.teamwork.api.model.AuthRequest;
 import com.teamwork.api.model.Cart;
@@ -73,25 +74,25 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserReadDTO findByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден: " + username));
         return UserReadDTO.toUserReadDTO(user);
     }
 
     @Transactional
     public UserReadDTO getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден id: " + id));
         return UserReadDTO.toUserReadDTO(user);
     }
 
     @Transactional
     public void assignRolesToUser(Long userId, List<String> roleNames) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         List<Role> roles = roleNames.stream()
                 .map(roleName -> roleRepository.findByName(roleName)
-                        .orElseThrow(() -> new RuntimeException("Роль " + roleName + " не найдена")))
+                        .orElseThrow(() -> new ResourceNotFoundException("Роль " + roleName + " не найдена")))
                 .collect(Collectors.toList());
 
         user.setRoles(roles);
@@ -101,9 +102,16 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserReadDTO updateUser(Long id, UserCreateUpdateDTO userDTO) {
 
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         // Обновляем только переданные поля (partial update)
         if (userDTO.getUsername() != null && !userDTO.getUsername().isBlank()) {
+            // Хорошей практикой будет проверка на уникальность нового имени, если оно
+            // меняется
+            if (!user.getUsername().equals(userDTO.getUsername())
+                    && userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+                throw new UserAlreadyExistsException("Имя пользователя " + userDTO.getUsername() + " уже занято");
+            }
             user.setUsername(userDTO.getUsername());
         }
 
@@ -134,14 +142,15 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         userRepository.delete(user);
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
         return user;
     }
 

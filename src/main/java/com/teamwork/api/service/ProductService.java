@@ -65,7 +65,6 @@ public class ProductService {
         product.setPrice(dto.getPrice());
         product.setHeight(dto.getHeight());
         product.setWidth(dto.getWidth());
-        product.setLength(dto.getLength());
         product.setStockQuantity(dto.getStockQuantity());
     }
 }
