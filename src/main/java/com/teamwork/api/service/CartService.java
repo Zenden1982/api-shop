@@ -97,6 +97,26 @@ public class CartService {
         return CartDTO.fromCart(cartRepository.save(userCart));
     }
 
+    @Transactional
+    public CartDTO updateItemQuantity(String username, Long cartItemId, int newQuantity) {
+
+
+        Cart cart = getOrCreateCart(username);
+
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Элемент корзины с ID " + cartItemId + " не найден"));
+
+        // Проверяем, что элемент корзины принадлежит текущему пользователю
+        if (!cartItem.getCart().getId().equals(cart.getId())) {
+            throw new SecurityException("Попытка изменить чужой элемент корзины");
+        }
+
+        cartItem.setQuantity(newQuantity);
+        cartItemRepository.save(cartItem);
+
+        return CartDTO.fromCart(cartRepository.save(cart));
+    }
+
     /**
      * Удаляет товар из корзины по его ID (cartItemId).
      *

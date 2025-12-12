@@ -11,7 +11,7 @@ import lombok.Data;
 @Builder
 public class CartItemDTO {
     private Long id;
-    private Long productId;
+    private ProductReadDTO productReadDTO;
     private String productName;
     private Integer quantity;
     private BigDecimal pricePerItem;
@@ -20,7 +20,7 @@ public class CartItemDTO {
     public static CartItemDTO fromCartItem(CartItem item) {
         return CartItemDTO.builder()
                 .id(item.getId())
-                .productId(item.getProduct().getId())
+                .productReadDTO(ProductReadDTO.fromProduct(item.getProduct()))
                 .productName(item.getProduct().getName())
                 .quantity(item.getQuantity())
                 .pricePerItem(item.getProduct().getPrice())

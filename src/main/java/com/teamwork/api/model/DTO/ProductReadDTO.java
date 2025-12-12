@@ -15,6 +15,10 @@ public class ProductReadDTO {
     private String name;
     private String description;
     private BigDecimal price;
+    private Double height;
+    private Double width;
+    private Double averageRatting;
+    private String color;
     Integer stockQuantity;
 
     /**
@@ -33,6 +37,9 @@ public class ProductReadDTO {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
+                .height(product.getHeight())
+                .width(product.getWidth())
+                .color(product.getColor())
                 .build();
     }
 }

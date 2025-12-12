@@ -35,17 +35,15 @@ public class ImageController {
     @Autowired
     private ProductRepository productRepository;
 
-    @Operation(summary = "Загрузить изображение", description = "Загружает файл изображения и создаёт запись для конфигурации")
+    @Operation(summary = "Загрузить изображение", description = "Загружает файл изображения и создаёт/обновляет запись для продукта")
     @PostMapping("/{productId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Image> create(@PathVariable Long productId,
-            @RequestPart("image") MultipartFile image) {
-        Image image2 = new Image();
-        imageService.uploadImage(image);
-        image2.setImage(image.getOriginalFilename());
-        image2.setProduct(productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + productId)));
-        return ResponseEntity.status(HttpStatus.CREATED).body(imageService.create(image2));
+                                        @RequestPart("image") MultipartFile image) {
+
+        Image savedImage = imageService.uploadImageForProduct(productId, image);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedImage);
     }
 
     @Operation(summary = "Получить изображение", description = "Возвращает DTO с информацией об изображении по id")

@@ -1,16 +1,11 @@
 package com.teamwork.api.controller;
 
+import com.teamwork.api.model.DTO.UpdateCartItemQuantityRequestDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.teamwork.api.model.DTO.AddItemToCartRequestDTO;
 import com.teamwork.api.model.DTO.CartDTO;
@@ -32,6 +27,20 @@ import lombok.RequiredArgsConstructor;
 public class CartController {
 
     private final CartService cartService;
+
+    @PutMapping("/items/{cartItemId}")
+    @Operation(summary = "Изменить количество товара в корзине",
+            description = "Изменяет количество конкретного элемента корзины по его ID.")
+    public ResponseEntity<CartDTO> updateItemQuantity(
+            @PathVariable @Positive(message = "ID элемента корзины должен быть положительным") Long cartItemId,
+            @Valid @RequestBody UpdateCartItemQuantityRequestDTO requestDTO) {
+
+        String username = getCurrentUsername();
+
+        CartDTO updatedCart = cartService.updateItemQuantity(username, cartItemId, requestDTO.getQuantity());
+
+        return ResponseEntity.ok(updatedCart);
+    }
 
     @GetMapping
     @Operation(summary = "Получить содержимое корзины", description = "Возвращает текущее состояние корзины пользователя, включая список товаров и общую стоимость.")

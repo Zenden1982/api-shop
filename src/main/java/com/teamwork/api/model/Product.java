@@ -3,14 +3,7 @@ package com.teamwork.api.model;
 import java.math.BigDecimal;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,9 +26,12 @@ public class Product {
 
     Double height;
     Double width;
-    Double length;
+    @Column(name = "average_rating")
+    private Double averageRating;
+    String color;
 
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
     private Image image;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

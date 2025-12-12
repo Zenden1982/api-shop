@@ -10,6 +10,7 @@ import com.teamwork.api.model.Product;
 import com.teamwork.api.model.DTO.ProductCreateUpdateDTO;
 import com.teamwork.api.model.DTO.ProductReadDTO;
 import com.teamwork.api.repository.ProductRepository;
+import com.teamwork.api.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,24 +19,36 @@ import lombok.RequiredArgsConstructor;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
 
     @Transactional(readOnly = true)
     public Page<ProductReadDTO> findAll(Pageable pageable) {
         return productRepository.findAll(pageable)
-                .map(ProductReadDTO::fromProduct);
+                .map(product -> {
+                    // подтягиваем средний рейтинг из отзывов
+                    Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
+                    product.setAverageRating(avg != null ? avg : 0.0);
+                    return ProductReadDTO.fromProduct(product);
+                });
     }
 
     @Transactional(readOnly = true)
     public ProductReadDTO findById(Long id) {
-        return productRepository.findById(id)
-                .map(ProductReadDTO::fromProduct)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Продукт с ID " + id + " не найден"));
+
+        Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
+        product.setAverageRating(avg != null ? avg : 0.0);
+
+        return ProductReadDTO.fromProduct(product);
     }
 
     @Transactional
     public ProductReadDTO create(ProductCreateUpdateDTO dto) {
         Product product = new Product();
         mapDtoToEntity(dto, product);
+        // при создании пока отзывов нет
+        product.setAverageRating(0.0);
         Product savedProduct = productRepository.save(product);
         return ProductReadDTO.fromProduct(savedProduct);
     }
@@ -45,6 +58,11 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Продукт с ID " + id + " не найден"));
         mapDtoToEntity(dto, product);
+
+        // пересчитали средний рейтинг из отзывов
+        Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
+        product.setAverageRating(avg != null ? avg : 0.0);
+
         Product updatedProduct = productRepository.save(product);
         return ProductReadDTO.fromProduct(updatedProduct);
     }
@@ -56,15 +74,13 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    /**
-     * Вспомогательный метод для маппинга полей из DTO в сущность.
-     */
     private void mapDtoToEntity(ProductCreateUpdateDTO dto, Product product) {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
         product.setHeight(dto.getHeight());
         product.setWidth(dto.getWidth());
+        product.setColor(dto.getColor());
         product.setStockQuantity(dto.getStockQuantity());
     }
 }
