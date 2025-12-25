@@ -61,7 +61,7 @@ public class UserService implements UserDetailsService {
 
         User savedUser = userRepository.save(user);
         Cart newUserCart = new Cart();
-        newUserCart.setUser(savedUser); // Привязываем корзину к только что созданному пользователю
+        newUserCart.setUser(savedUser);
         cartRepository.save(newUserCart);
         return UserReadDTO.toUserReadDTO(user);
     }
@@ -104,10 +104,8 @@ public class UserService implements UserDetailsService {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
-        // Обновляем только переданные поля (partial update)
         if (userDTO.getUsername() != null && !userDTO.getUsername().isBlank()) {
-            // Хорошей практикой будет проверка на уникальность нового имени, если оно
-            // меняется
+
             if (!user.getUsername().equals(userDTO.getUsername())
                     && userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
                 throw new UserAlreadyExistsException("Имя пользователя " + userDTO.getUsername() + " уже занято");

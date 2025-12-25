@@ -25,10 +25,10 @@ public class ProductService {
     public Page<ProductReadDTO> findAll(Pageable pageable) {
         return productRepository.findAll(pageable)
                 .map(product -> {
-                    // подтягиваем средний рейтинг из отзывов
+                    ProductReadDTO readDTO = ProductReadDTO.fromProduct(product);
                     Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
-                    product.setAverageRating(avg != null ? avg : 0.0);
-                    return ProductReadDTO.fromProduct(product);
+                    readDTO.setAverageRatting(avg != null ? avg : 0.0);
+                    return readDTO;
                 });
     }
 
@@ -47,7 +47,6 @@ public class ProductService {
     public ProductReadDTO create(ProductCreateUpdateDTO dto) {
         Product product = new Product();
         mapDtoToEntity(dto, product);
-        // при создании пока отзывов нет
         product.setAverageRating(0.0);
         Product savedProduct = productRepository.save(product);
         return ProductReadDTO.fromProduct(savedProduct);
@@ -59,7 +58,6 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Продукт с ID " + id + " не найден"));
         mapDtoToEntity(dto, product);
 
-        // пересчитали средний рейтинг из отзывов
         Double avg = reviewRepository.findAverageRatingByProductId(product.getId());
         product.setAverageRating(avg != null ? avg : 0.0);
 

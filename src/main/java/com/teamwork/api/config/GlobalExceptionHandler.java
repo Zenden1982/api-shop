@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Hidden
 @ControllerAdvice
-@Slf4j // Полезно для логирования ошибок 500
+@Slf4j
 public class GlobalExceptionHandler {
 
     // 404 Not Found
@@ -66,7 +66,6 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Validation Error");
 
-        // Собираем все ошибки полей в карту: "имяПоля" -> "сообщение об ошибке"
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -75,7 +74,7 @@ public class GlobalExceptionHandler {
         });
 
         body.put("message", "Ошибка валидации входных данных");
-        body.put("details", errors); // Поле details будет содержать конкретные ошибки
+        body.put("details", errors);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
@@ -93,13 +92,12 @@ public class GlobalExceptionHandler {
     // 500 Internal Server Error (Все остальное)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        log.error("Произошла непредвиденная ошибка: ", ex); // Логируем стектрейс в консоль
+        log.error("Произошла непредвиденная ошибка: ", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", "Internal Server Error");
-        // Не показываем детали ошибки клиенту в продакшене для безопасности
         body.put("message", "Произошла внутренняя ошибка сервера. Пожалуйста, обратитесь к администратору.");
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);

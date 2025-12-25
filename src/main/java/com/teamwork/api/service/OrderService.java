@@ -76,7 +76,6 @@ public class OrderService {
         }).collect(Collectors.toList());
         order.setOrderItems(orderItems);
 
-        // Рассчитываем общую стоимость заказа
         BigDecimal totalPrice = orderItems.stream()
                 .map(item -> item.getProduct().getPrice().multiply(new BigDecimal(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -132,7 +131,6 @@ public class OrderService {
                 .map(OrderReadDTO::fromOrder);
     }
 
-    // ДОБАВЛЕН НОВЫЙ МЕТОД ДЛЯ КОНТРОЛЛЕРА
     @Transactional(readOnly = true)
     public List<OrderReadDTO> findAllByUsername(String username) {
         User user = userRepository.findByUsername(username)

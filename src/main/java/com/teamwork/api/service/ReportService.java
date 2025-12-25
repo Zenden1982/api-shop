@@ -35,18 +35,15 @@ public class ReportService {
 
         List<SalesReportRowDTO> rows = orderRepository.findSalesReport(fromDt, toDt);
 
-        // Создаем новую рабочую книгу Excel
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             XSSFSheet sheet = workbook.createSheet("Отчет о продажах");
 
-            // --- Оформление заголовка ---
             Row headerRow = sheet.createRow(0);
             CellStyle headerStyle = workbook.createCellStyle();
             Font headerFont = workbook.createFont();
             headerFont.setBold(true);
             headerStyle.setFont(headerFont);
 
-            // Создаем заголовки
             Cell cell1 = headerRow.createCell(0);
             cell1.setCellValue("Наименование");
             cell1.setCellStyle(headerStyle);
@@ -59,12 +56,10 @@ public class ReportService {
             cell3.setCellValue("Входящая цена");
             cell3.setCellStyle(headerStyle);
 
-            // Устанавливаем ширину колонок
-            sheet.setColumnWidth(0, 30 * 256); // Наименование
-            sheet.setColumnWidth(1, 15 * 256); // Количество
-            sheet.setColumnWidth(2, 15 * 256); // Цена
+            sheet.setColumnWidth(0, 30 * 256);
+            sheet.setColumnWidth(1, 15 * 256);
+            sheet.setColumnWidth(2, 15 * 256);
 
-            // --- Заполняем данные ---
             int rowNum = 1;
             for (SalesReportRowDTO r : rows) {
                 BigDecimal wholesalePrice = calculateWholesalePrice(r.getPrice(), r.getQuantity());
@@ -82,7 +77,6 @@ public class ReportService {
                 rowNum++;
             }
 
-            // Записываем в выходной поток
             workbook.write(outputStream);
         }
     }

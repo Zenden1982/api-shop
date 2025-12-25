@@ -47,7 +47,10 @@ public class ReviewController {
     }
 
     @GetMapping("/product/{productId}")
-    @Operation(summary = "Получить отзывы товара (с пагинацией)", description = "Возвращает страницу отзывов для конкретного товара. Параметры: page, size, sort.")
+    @Operation(
+            summary = "Получить отзывы товара (с пагинацией)",
+            description = "Возвращает страницу отзывов для конкретного товара. Параметры: page, size, sort."
+    )
     public ResponseEntity<Page<ReviewReadDTO>> getProductReviews(
             @PathVariable Long productId,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -56,9 +59,37 @@ public class ReviewController {
         return ResponseEntity.ok(page);
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Получить отзыв по ID")
+    public ResponseEntity<ReviewReadDTO> getReviewById(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.getReviewById(id));
+    }
+
+    @PutMapping("/{id}")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(
+            summary = "Обновить отзыв",
+            description = "Редактировать отзыв. Доступно только автору или админу."
+    )
+    public ResponseEntity<ReviewReadDTO> updateReview(
+            @PathVariable Long id,
+            @RequestBody @Valid ReviewCreateUpdateDTO dto,
+            Authentication authentication) {
+
+        String currentUsername = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        ReviewReadDTO updatedReview = reviewService.updateReview(id, dto, currentUsername, isAdmin);
+        return ResponseEntity.ok(updatedReview);
+    }
+
     @DeleteMapping("/{id}")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Удалить отзыв", description = "Удаляет отзыв. Доступно автору отзыва или администратору.")
+    @Operation(
+            summary = "Удалить отзыв",
+            description = "Удаляет отзыв. Доступно автору отзыва или администратору."
+    )
     public ResponseEntity<Void> deleteReview(
             @PathVariable Long id,
             Authentication authentication) {
@@ -71,25 +102,36 @@ public class ReviewController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Получить отзыв по ID")
-    public ResponseEntity<ReviewReadDTO> getReviewById(@PathVariable Long id) {
-        return ResponseEntity.ok(reviewService.getReviewById(id));
-    }
+    // ===== Эндпоинты для отзывов текущего пользователя =====
 
-    @PutMapping("/{id}")
+    @GetMapping("/me")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Обновить отзыв", description = "Редактировать отзыв. Доступно только автору или админу.")
-    public ResponseEntity<ReviewReadDTO> updateReview(
-            @PathVariable Long id,
-            @RequestBody @Valid ReviewCreateUpdateDTO dto,
-            Authentication authentication) {
+    @Operation(
+            summary = "Получить все отзывы текущего пользователя",
+            description = "Возвращает страницу отзывов текущего пользователя. Можно использовать параметры page, size, sort."
+    )
+    public ResponseEntity<Page<ReviewReadDTO>> getMyReviews(
+            Authentication authentication,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         String currentUsername = authentication.getName();
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Page<ReviewReadDTO> page = reviewService.getUserReviews(currentUsername, pageable);
+        return ResponseEntity.ok(page);
+    }
 
-        ReviewReadDTO updatedReview = reviewService.updateReview(id, dto, currentUsername, isAdmin);
-        return ResponseEntity.ok(updatedReview);
+    @GetMapping("/me/product/{productId}")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(
+            summary = "Получить отзывы текущего пользователя по продукту",
+            description = "Возвращает страницу отзывов текущего пользователя, отфильтрованных по ID продукта."
+    )
+    public ResponseEntity<Page<ReviewReadDTO>> getMyReviewsByProduct(
+            @PathVariable Long productId,
+            Authentication authentication,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        String currentUsername = authentication.getName();
+        Page<ReviewReadDTO> page = reviewService.getUserReviewsByProduct(currentUsername, productId, pageable);
+        return ResponseEntity.ok(page);
     }
 }

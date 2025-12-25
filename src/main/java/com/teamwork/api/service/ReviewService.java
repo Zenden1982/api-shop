@@ -48,6 +48,19 @@ public class ReviewService {
     }
 
     @Transactional
+    public Page<ReviewReadDTO> getUserReviews(String username, Pageable pageable) {
+        return reviewRepository.findByUserUsername(username, pageable)
+                .map(ReviewReadDTO::fromEntity);
+    }
+
+    @Transactional
+    public Page<ReviewReadDTO> getUserReviewsByProduct(String username, Long productId, Pageable pageable) {
+        return reviewRepository.findByUserUsernameAndProductId(username, productId, pageable)
+                .map(ReviewReadDTO::fromEntity);
+    }
+
+
+    @Transactional
     public Page<ReviewReadDTO> getReviewsByProductId(Long productId, Pageable pageable) {
         return reviewRepository.findByProductId(productId, pageable)
                 .map(ReviewReadDTO::fromEntity);
@@ -65,20 +78,14 @@ public class ReviewService {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Отзыв с ID " + id + " не найден"));
 
-        // Проверка прав: редактировать может только автор (администратор - на ваше
-        // усмотрение, обычно админ просто удаляет)
-        // Если админ тоже может редактировать, оставьте проверку "|| isAdmin"
+
         if (!review.getUser().getUsername().equals(currentUsername) && !isAdmin) {
             throw new AccessDeniedException("Вы не можете редактировать чужой отзыв");
         }
 
-        // Обновляем поля (текст и рейтинг)
         review.setText(dto.getText());
         review.setRating(dto.getRating());
 
-        // Если логика позволяет менять продукт, то раскомментируйте, но обычно отзыв
-        // привязан к товару навсегда
-        // if (!review.getProduct().getId().equals(dto.getProductId())) { ... }
 
         Review updated = reviewRepository.save(review);
         return ReviewReadDTO.fromEntity(updated);

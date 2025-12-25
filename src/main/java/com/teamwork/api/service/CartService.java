@@ -126,19 +126,17 @@ public class CartService {
     @Transactional
     public void removeItemFromCart(String username, Long cartItemId) {
         Cart cart = getOrCreateCart(username);
+
         CartItem itemToRemove = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Элемент корзины с ID " + cartItemId + " не найден"));
 
-        // Проверяем, что этот элемент принадлежит корзине текущего пользователя для
-        // безопасности
         if (!itemToRemove.getCart().getId().equals(cart.getId())) {
-            // Это исключение можно заменить на более специфичное, например,
-            // AccessDeniedException
             throw new SecurityException("Попытка удалить чужой элемент корзины");
         }
 
-        cartItemRepository.delete(itemToRemove);
+        cart.getCartItems().removeIf(ci -> ci.getId().equals(cartItemId));
     }
+
 
     /**
      * Полностью очищает корзину пользователя.
@@ -149,8 +147,6 @@ public class CartService {
     public void clearCart(String username) {
         Cart cart = getOrCreateCart(username);
 
-        // Благодаря orphanRemoval=true в сущности Cart, эта строка удалит все CartItem
-        // из БД
         cart.getCartItems().clear();
 
         cartRepository.save(cart);

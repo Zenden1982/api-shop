@@ -20,18 +20,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
-                        // Не перехватываем API запросы
                         if (resourcePath.startsWith("api/")) {
                             return null;
                         }
 
-                        // Если файл существует (CSS, JS, картинки), отдаем его
                         Resource requestedResource = location.createRelative(resourcePath);
                         if (requestedResource.exists() && requestedResource.isReadable()) {
                             return requestedResource;
                         }
 
-                        // Для всех остальных путей возвращаем index.html (для React Router)
                         return new ClassPathResource("/static/index.html");
                     }
                 });
